@@ -37,10 +37,10 @@ const CHART = {
 
 // ── Formatters ────────────────────────────────
 const man = (v: number) => {
-  if (v >= 10_000) return `${Math.round(v / 10_000)}万`;
+  if (v >= 10_000) return `${Math.round(v / 10_000).toLocaleString()}万`;
   return `${Math.round(v).toLocaleString()}円`;
 };
-const manAxis = (v: number) => `${Math.round(v / 10_000)}万`;
+const manAxis = (v: number) => `${Math.round(v / 10_000).toLocaleString()}万`;
 
 // ── localStorage ──────────────────────────────
 const LS_KEY = 'kurasu-params-v1';

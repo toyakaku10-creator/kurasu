@@ -28,7 +28,7 @@ const SLIDER_CSS = `
 
 // ── Formatters ────────────────────────────────
 const yen  = (v: number) => {
-  if (v >= 10_000) return `${Math.round(v / 10_000)}万円`;
+  if (v >= 10_000) return `${Math.round(v / 10_000).toLocaleString()}万円`;
   return `${v.toLocaleString()}円`;
 };
 const yenM = (v: number) => `${v.toLocaleString()}円/月`;
