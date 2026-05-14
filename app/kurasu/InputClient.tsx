@@ -1,0 +1,353 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { DEFAULT_PARAMS } from './simulation';
+import type { Params } from './simulation';
+
+// ── Design tokens ─────────────────────────────
+const GOLD = '#C9A84C';
+const BG = '#0F2340';
+const CARD = '#1a2e4a';
+const CARD_DARK = '#12263d';
+const BORDER = '#1e3a57';
+const SUB = '#94a3b8';
+
+const SLIDER_CSS = `
+  .sg { -webkit-appearance:none; appearance:none; height:4px; border-radius:2px;
+        outline:none; cursor:pointer; width:100%; }
+  .sg::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px;
+    border-radius:50%; background:${GOLD}; cursor:pointer;
+    border:2px solid ${CARD_DARK}; box-shadow:0 0 8px ${GOLD}66;
+    transition:box-shadow .15s; }
+  .sg:hover::-webkit-slider-thumb { box-shadow:0 0 16px ${GOLD}aa; }
+  .sg::-moz-range-thumb { width:20px; height:20px; border-radius:50%;
+    background:${GOLD}; cursor:pointer; border:2px solid ${CARD_DARK};
+    box-shadow:0 0 8px ${GOLD}66; }
+`;
+
+// ── Formatters ────────────────────────────────
+const yen = (v: number) => {
+  if (v >= 100_000_000) return `${(v / 100_000_000).toFixed(1)}億円`;
+  if (v >= 10_000) return `${Math.round(v / 10_000)}万円`;
+  return `${v.toLocaleString()}円`;
+};
+const yenM = (v: number) => `${v.toLocaleString()}円/月`;
+const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
+const age = (v: number) => `${v}歳`;
+const yr = (v: number) => `${v}年`;
+
+// ── localStorage ──────────────────────────────
+const LS_KEY = 'kurasu-params-v1';
+
+function loadParams(): Params {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) return { ...DEFAULT_PARAMS, ...JSON.parse(raw) };
+  } catch {}
+  return DEFAULT_PARAMS;
+}
+
+function saveParams(p: Params) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(p));
+  } catch {}
+}
+
+// ── Slider ────────────────────────────────────
+function Slider({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step,
+  display,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min: number;
+  max: number;
+  step: number;
+  display: (v: number) => string;
+}) {
+  const fill = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between items-baseline gap-2">
+        <span className="text-xs" style={{ color: SUB }}>
+          {label}
+        </span>
+        <span className="text-sm font-bold tabular-nums flex-shrink-0" style={{ color: GOLD }}>
+          {display(value)}
+        </span>
+      </div>
+      <input
+        type="range"
+        className="sg"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        style={{
+          background: `linear-gradient(to right, ${GOLD} 0%, ${GOLD} ${fill}%, ${BORDER} ${fill}%, ${BORDER} 100%)`,
+        }}
+      />
+    </div>
+  );
+}
+
+// ── Toggle ────────────────────────────────────
+function Toggle({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 py-1">
+      <span className="text-xs" style={{ color: SUB }}>
+        {label}
+      </span>
+      <button
+        onClick={() => onChange(!value)}
+        className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
+        style={{ background: value ? GOLD : '#2a4a6a' }}
+      >
+        <span
+          className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform"
+          style={{ transform: value ? 'translateX(20px)' : 'translateX(0)' }}
+        />
+      </button>
+    </div>
+  );
+}
+
+// ── Section card ──────────────────────────────
+function Sec({
+  title,
+  icon,
+  children,
+  defaultOpen = true,
+}: {
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${BORDER}` }}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 text-sm font-bold transition-opacity hover:opacity-80"
+        style={{ background: CARD_DARK, color: GOLD }}
+      >
+        <span className="flex items-center gap-2">
+          <span>{icon}</span>
+          <span>{title}</span>
+        </span>
+        <span className="text-xs" style={{ color: SUB }}>
+          {open ? '▲' : '▼'}
+        </span>
+      </button>
+      {open && (
+        <div className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5" style={{ background: CARD }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Divider (full-width children) ─────────────
+function Full({ children }: { children: React.ReactNode }) {
+  return <div className="col-span-1 sm:col-span-2">{children}</div>;
+}
+
+// ── Main ──────────────────────────────────────
+export default function InputClient() {
+  const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
+  const router = useRouter();
+
+  useEffect(() => {
+    setParams(loadParams());
+  }, []);
+
+  const set = useCallback(
+    <K extends keyof Params>(key: K, value: Params[K]) =>
+      setParams((p) => ({ ...p, [key]: value })),
+    []
+  );
+
+  const handleStart = useCallback(() => {
+    saveParams(params);
+    router.push('/kurasu/result');
+  }, [params, router]);
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ background: BG, color: '#fff' }}>
+      <style>{SLIDER_CSS}</style>
+
+      {/* Header */}
+      <header
+        className="flex items-center justify-between px-6 py-4 flex-shrink-0"
+        style={{ background: CARD_DARK, borderBottom: `1px solid ${GOLD}44` }}
+      >
+        <div>
+          <h1
+            className="text-2xl font-bold tracking-widest"
+            style={{ color: GOLD, fontFamily: 'Georgia, serif' }}
+          >
+            kurasu
+          </h1>
+          <p className="text-xs mt-0.5" style={{ color: SUB }}>
+            パラメータを設定してシミュレーションを開始
+          </p>
+        </div>
+        <div
+          className="hidden sm:flex items-center gap-1 text-xs px-3 py-1 rounded-full"
+          style={{ background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}55` }}
+        >
+          ◆ Step 1 / 2
+        </div>
+      </header>
+
+      {/* Scrollable form */}
+      <main className="flex-1 overflow-y-auto pb-28">
+        <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-4">
+
+          <Sec title="基本情報" icon="👤">
+            <Slider label="現在年齢" value={params.currentAge}
+              onChange={(v) => set('currentAge', v)} min={20} max={80} step={1} display={age} />
+            <Slider label="現在年（西暦）" value={params.currentYear}
+              onChange={(v) => set('currentYear', v)} min={2020} max={2050} step={1}
+              display={(v) => `${v}年`} />
+          </Sec>
+
+          <Sec title="株式" icon="📈">
+            <Full>
+              <Slider label="保有額" value={params.stockAmount}
+                onChange={(v) => set('stockAmount', v)} min={0} max={50_000_000} step={500_000} display={yen} />
+            </Full>
+            <Slider label="年間成長率" value={params.stockGrowthRate}
+              onChange={(v) => set('stockGrowthRate', v)} min={0} max={0.20} step={0.001} display={pct} />
+            <Slider label="配当率" value={params.stockDividendRate}
+              onChange={(v) => set('stockDividendRate', v)} min={0} max={0.10} step={0.001} display={pct} />
+            <Full>
+              <Slider label="NISA比率" value={params.stockNisaRatio}
+                onChange={(v) => set('stockNisaRatio', v)} min={0} max={1} step={0.01}
+                display={(v) => `${Math.round(v * 100)}%`} />
+            </Full>
+          </Sec>
+
+          <Sec title="その他資産" icon="🏅" defaultOpen={false}>
+            <Slider label="金 保有額" value={params.goldAmount}
+              onChange={(v) => set('goldAmount', v)} min={0} max={20_000_000} step={100_000} display={yen} />
+            <Slider label="金 成長率" value={params.goldGrowthRate}
+              onChange={(v) => set('goldGrowthRate', v)} min={0} max={0.15} step={0.001} display={pct} />
+            <Slider label="現金・預金" value={params.cashAmount}
+              onChange={(v) => set('cashAmount', v)} min={0} max={20_000_000} step={100_000} display={yen} />
+            <Slider label="暗号資産" value={params.cryptoAmount}
+              onChange={(v) => set('cryptoAmount', v)} min={0} max={5_000_000} step={50_000} display={yen} />
+            <Full>
+              <Slider label="暗号資産 成長率" value={params.cryptoGrowthRate}
+                onChange={(v) => set('cryptoGrowthRate', v)} min={0} max={1} step={0.01} display={pct} />
+            </Full>
+          </Sec>
+
+          <Sec title="生活費" icon="🏠">
+            <Full>
+              <Slider label="年間生活費" value={params.annualLivingExpense}
+                onChange={(v) => set('annualLivingExpense', v)} min={1_200_000} max={10_000_000} step={100_000} display={yen} />
+            </Full>
+            <Slider label="インフレ率" value={params.inflationRate}
+              onChange={(v) => set('inflationRate', v)} min={0} max={0.10} step={0.001} display={pct} />
+            <Full>
+              <Toggle label="生活費逓減（統計カーブ・70歳以降減少）"
+                value={params.livingExpenseDecline}
+                onChange={(v) => set('livingExpenseDecline', v)} />
+            </Full>
+            {params.livingExpenseDecline && (
+              <>
+                <Slider label="逓減開始年齢" value={params.livingExpenseDeclineAge}
+                  onChange={(v) => set('livingExpenseDeclineAge', v)} min={60} max={85} step={1} display={age} />
+                <Slider label="削減率" value={params.livingExpenseDeclineRate}
+                  onChange={(v) => set('livingExpenseDeclineRate', v)} min={0} max={0.50} step={0.01} display={pct} />
+              </>
+            )}
+          </Sec>
+
+          <Sec title="iDeCo" icon="🏦" defaultOpen={false}>
+            <Slider label="月額掛金（〜2026年）" value={params.iDeCoMonthly}
+              onChange={(v) => set('iDeCoMonthly', v)} min={0} max={68_000} step={1_000} display={yenM} />
+            <Slider label="月額掛金（2027年以降）" value={params.iDeCoMonthly2027}
+              onChange={(v) => set('iDeCoMonthly2027', v)} min={0} max={75_000} step={1_000} display={yenM} />
+            <Slider label="利回り" value={params.iDeCoReturn}
+              onChange={(v) => set('iDeCoReturn', v)} min={0} max={0.10} step={0.001} display={pct} />
+            <Slider label="拠出終了年齢" value={params.iDeCoEndAge}
+              onChange={(v) => set('iDeCoEndAge', v)} min={50} max={75} step={1} display={age} />
+            <Full>
+              <Slider label="受取開始年齢" value={params.iDeCoStartReceiveAge}
+                onChange={(v) => set('iDeCoStartReceiveAge', v)} min={60} max={75} step={1} display={age} />
+            </Full>
+          </Sec>
+
+          <Sec title="退職" icon="🎌">
+            <Slider label="退職年齢" value={params.retirementAge}
+              onChange={(v) => set('retirementAge', Math.max(60, v))} min={55} max={70} step={1} display={age} />
+            <Slider label="勤続年数" value={params.yearsOfService}
+              onChange={(v) => set('yearsOfService', v)} min={1} max={45} step={1} display={yr} />
+            <Full>
+              <Slider label="退職金" value={params.retirementPayment}
+                onChange={(v) => set('retirementPayment', v)} min={0} max={50_000_000} step={500_000} display={yen} />
+            </Full>
+          </Sec>
+
+          <Sec title="年金" icon="🪙" defaultOpen={false}>
+            <Slider label="厚生+基礎年金（月額）" value={params.pensionMonthly}
+              onChange={(v) => set('pensionMonthly', v)} min={0} max={300_000} step={5_000} display={yenM} />
+            <Slider label="受取開始年齢" value={params.pensionStartAge}
+              onChange={(v) => set('pensionStartAge', v)} min={60} max={75} step={1} display={age} />
+            <Full>
+              <Slider label="年金払退職給付（月額）" value={params.pensionRetirementBenefitMonthly}
+                onChange={(v) => set('pensionRetirementBenefitMonthly', v)} min={0} max={50_000} step={1_000} display={yenM} />
+            </Full>
+          </Sec>
+
+          <Sec title="再投資オプション" icon="♻️" defaultOpen={false}>
+            <Full>
+              <Toggle label="退職金・iDeCoを株式に再投資（FIRE加速）"
+                value={params.reinvestRetirement}
+                onChange={(v) => set('reinvestRetirement', v)} />
+            </Full>
+          </Sec>
+
+        </div>
+      </main>
+
+      {/* Fixed start button */}
+      <footer
+        className="fixed bottom-0 inset-x-0 px-4 py-4 flex justify-center"
+        style={{ background: `${BG}ee`, borderTop: `1px solid ${BORDER}`, backdropFilter: 'blur(8px)' }}
+      >
+        <button
+          onClick={handleStart}
+          className="w-full max-w-2xl py-4 rounded-2xl font-bold text-base tracking-wide transition-transform active:scale-95"
+          style={{
+            background: `linear-gradient(135deg, ${GOLD}, #e5c275)`,
+            color: '#0F2340',
+            boxShadow: `0 4px 24px ${GOLD}66`,
+          }}
+        >
+          シミュレーション開始 →
+        </button>
+      </footer>
+    </div>
+  );
+}
