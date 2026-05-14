@@ -171,87 +171,6 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
 }
 
 // ── Other-income breakdown cell ───────────────
-function OtherIncomeCell({
-  r,
-  reinvestRetirement,
-  otherIncome,
-  preRetirement,
-}: {
-  r: YearRow;
-  reinvestRetirement: boolean;
-  otherIncome: number;
-  preRetirement: boolean;
-}) {
-  const [show, setShow] = useState(false);
-
-  if (preRetirement) {
-    return <span style={{ color: SUB }}>在職中</span>;
-  }
-
-  const items: Array<{ label: string; value: string }> = [];
-  if (r.pensionPublic > 0)
-    items.push({ label: '公的年金', value: man(r.pensionPublic) });
-  if (r.pensionBenefit > 0)
-    items.push({ label: '年金払退職給付', value: man(r.pensionBenefit) });
-  if (r.iDeCoIncome > 0)
-    items.push({ label: 'iDeCo', value: reinvestRetirement ? '再投資中' : man(r.iDeCoIncome) });
-  if (r.retirementIncome > 0)
-    items.push({ label: '退職金', value: reinvestRetirement ? '再投資中' : man(r.retirementIncome) });
-
-  if (items.length === 0) {
-    return <span style={{ color: SUB }}>—</span>;
-  }
-
-  return (
-    <div
-      style={{ position: 'relative', display: 'inline-block' }}
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
-      <span style={{
-        color: SUB,
-        cursor: 'default',
-        borderBottom: `1px dashed ${BORDER}`,
-        paddingBottom: 1,
-      }}>
-        {otherIncome === 0 ? '—' : man(otherIncome)}
-      </span>
-      {show && (
-        <div style={{
-          position: 'absolute',
-          bottom: 'calc(100% + 6px)',
-          right: 0,
-          background: BG,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 10,
-          padding: '10px 14px',
-          boxShadow: '0 4px 16px rgba(0,0,0,.10)',
-          zIndex: 50,
-          minWidth: 210,
-          whiteSpace: 'nowrap',
-          textAlign: 'left',
-        }}>
-          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: NAVY, marginBottom: 6 }}>
-            その他収入 内訳
-          </div>
-          {items.map(({ label, value }) => (
-            <div key={label} style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: 20,
-              fontSize: '0.65rem',
-              marginBottom: 3,
-            }}>
-              <span style={{ color: SUB }}>{label}</span>
-              <span style={{ fontFamily: 'monospace', color: NAVY }}>{value}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Chart card ────────────────────────────────
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -447,14 +366,9 @@ export default function ResultClient() {
                           style={{ color: preRetirement ? SUB : NAVY }}>
                           {preRetirement ? '再投資中' : man(r.dividendIncome)}
                         </td>
-                        {/* 5. その他収入（ホバー内訳） */}
-                        <td className="py-2 px-4 text-right whitespace-nowrap">
-                          <OtherIncomeCell
-                            r={r}
-                            reinvestRetirement={params.reinvestRetirement}
-                            otherIncome={otherIncome}
-                            preRetirement={preRetirement}
-                          />
+                        {/* 5. 年金収入 */}
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                          {preRetirement ? '在職中' : man(otherIncome)}
                         </td>
                         {/* 6. 生活費 */}
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
