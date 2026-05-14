@@ -272,7 +272,7 @@ export default function InputClient() {
 
           <Sec title="再投資オプション" icon="♻️" defaultOpen={false}>
             <Full>
-              <Toggle label="退職金・iDeCoを株式に再投資（FIRE加速）"
+              <Toggle label="退職金・iDeCoを株式に再投資（配当自立を加速）"
                 value={params.reinvestRetirement}
                 onChange={(v) => set('reinvestRetirement', v)} />
             </Full>

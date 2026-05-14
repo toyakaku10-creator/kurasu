@@ -152,7 +152,7 @@ export default function ResultClient() {
       { age: params.iDeCoStartReceiveAge, label: 'iDeCo 受取開始', sub: '20年均等払い' },
       { age: params.pensionStartAge, label: '年金 受取開始', sub: `月 ${man(params.pensionMonthly)}` },
     ];
-    if (fireAge) ms.push({ age: fireAge, label: 'FIRE 達成', sub: '配当が生活費を超える' });
+    if (fireAge) ms.push({ age: fireAge, label: '自立達成', sub: '配当が生活費を超える' });
     return ms.sort((a, b) => a.age - b.age);
   }, [params, fireAge]);
 
@@ -213,9 +213,9 @@ export default function ResultClient() {
 
           {/* Badges */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Badge label="配当で暮らせる年齢"
+            <Badge label="配当自立年齢"
               value={fireAge ? `${fireAge}歳` : '—'}
-              sub="FIRE 達成年齢" variant="gold" />
+              sub="配当自立の達成年齢" variant="gold" />
             <Badge label="収支黒字化年齢"
               value={surplusAge ? `${surplusAge}歳` : '—'}
               sub="総収入 ≥ 生活費" variant="navy" />
@@ -246,7 +246,7 @@ export default function ResultClient() {
                 <YAxis tickFormatter={manAxis} tick={axisProps} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={legendStyle} />
-                {fireAge && refLine(fireAge, 'FIRE', GOLD)}
+                {fireAge && refLine(fireAge, '自立', GOLD)}
                 {refLine(params.retirementAge, '退職', CHART.retirement)}
                 {refLine(params.pensionStartAge, '年金', CHART.pension)}
                 <Bar dataKey="配当"        stackId="i" fill={CHART.dividend} />
@@ -268,7 +268,7 @@ export default function ResultClient() {
                 <YAxis tickFormatter={manAxis} tick={axisProps} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={legendStyle} />
-                {fireAge && refLine(fireAge, 'FIRE', GOLD)}
+                {fireAge && refLine(fireAge, '自立', GOLD)}
                 <Area type="monotone" dataKey="株式"   stackId="1" stroke={CHART.stocks}    fill={CHART.stocks}    fillOpacity={0.4} />
                 <Area type="monotone" dataKey="金"     stackId="1" stroke={CHART.gold}      fill={CHART.gold}      fillOpacity={0.4} />
                 <Area type="monotone" dataKey="現金"   stackId="1" stroke={CHART.cash}      fill={CHART.cash}      fillOpacity={0.4} />
