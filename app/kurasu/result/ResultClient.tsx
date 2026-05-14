@@ -398,7 +398,7 @@ export default function ResultClient() {
               <h2 className="text-sm font-bold" style={{ color: NAVY }}>年間別推移テーブル</h2>
             </div>
             {/* scroll container — both axes, sticky header works inside a single overflow:auto */}
-            <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px' }}>
+            <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch' }}>
               <table className="text-xs border-collapse" style={{ minWidth: '640px', width: '100%' }}>
                 <thead>
                   <tr style={{

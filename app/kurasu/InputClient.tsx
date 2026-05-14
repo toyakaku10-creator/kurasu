@@ -14,15 +14,15 @@ const BORDER = '#E9ECEF';
 const SUB    = '#6B7280';
 
 const SLIDER_CSS = `
-  .sg { -webkit-appearance:none; appearance:none; height:4px; border-radius:2px;
-        outline:none; cursor:pointer; width:100%; }
-  .sg::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px;
+  .sg { -webkit-appearance:none; appearance:none; height:6px; border-radius:3px;
+        outline:none; cursor:pointer; width:100%; touch-action:pan-y; }
+  .sg::-webkit-slider-thumb { -webkit-appearance:none; width:26px; height:26px;
     border-radius:50%; background:${GOLD}; cursor:pointer;
-    border:2px solid #fff; box-shadow:0 1px 6px rgba(0,0,0,.2);
+    border:3px solid #fff; box-shadow:0 1px 6px rgba(0,0,0,.2);
     transition:box-shadow .15s; }
   .sg:hover::-webkit-slider-thumb { box-shadow:0 2px 10px ${GOLD}88; }
-  .sg::-moz-range-thumb { width:18px; height:18px; border-radius:50%;
-    background:${GOLD}; cursor:pointer; border:2px solid #fff;
+  .sg::-moz-range-thumb { width:26px; height:26px; border-radius:50%;
+    background:${GOLD}; cursor:pointer; border:3px solid #fff;
     box-shadow:0 1px 6px rgba(0,0,0,.2); }
 `;
 
