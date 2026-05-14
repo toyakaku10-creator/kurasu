@@ -321,7 +321,7 @@ export default function ResultClient() {
               <h2 className="text-sm font-bold" style={{ color: NAVY }}>年間別推移<span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円）</span></h2>
             </div>
             {/* scroll container — both axes, sticky header works inside a single overflow:auto */}
-            <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
               <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '14px', tableLayout: 'fixed' }}>
                 <colgroup>
                   <col style={{ width: '14%' }} />  {/* 西暦   4桁 */}
@@ -345,7 +345,7 @@ export default function ResultClient() {
                       { label: '配当',   align: 'right', pl: '4px', pr: '4px', bold: true  },
                       { label: '年金',   align: 'right', pl: '4px', pr: '4px', bold: true  },
                       { label: '支出',   align: 'right', pl: '4px', pr: '1px', bold: true  },
-                      { label: '収支',   align: 'right', pl: '1px', pr: '4px', bold: true  },
+                      { label: '収支',   align: 'right', pl: '1px', pr: '14px', bold: true  },
                     ] as const).map(({ label, align, pl, pr, bold }) => (
                       <th key={label}
                         className={`py-1 whitespace-nowrap ${bold ? 'font-semibold' : 'font-normal'}`}
@@ -389,7 +389,7 @@ export default function ResultClient() {
                         </td>
                         {/* 7. 収支 */}
                         <td className="py-1 text-right tabular-nums font-semibold"
-                          style={{ color: preRetirement ? SUB : r.balance >= 0 ? GREEN : RED, paddingLeft: '1px', paddingRight: '4px' }}>
+                          style={{ color: preRetirement ? SUB : r.balance >= 0 ? GREEN : RED, paddingLeft: '1px', paddingRight: '14px' }}>
                           {preRetirement ? '—' : tblSigned(r.balance)}
                         </td>
                       </tr>
