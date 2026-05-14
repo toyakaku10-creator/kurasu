@@ -322,7 +322,16 @@ export default function ResultClient() {
             </div>
             {/* scroll container — both axes, sticky header works inside a single overflow:auto */}
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch' }}>
-              <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '10px' }}>
+              <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '10px', tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '36px' }} />  {/* 年 */}
+                  <col style={{ width: '24px' }} />  {/* 齢 */}
+                  <col />  {/* 総資産 */}
+                  <col />  {/* 配当 */}
+                  <col />  {/* 年金 */}
+                  <col />  {/* 支出 */}
+                  <col />  {/* ± */}
+                </colgroup>
                 <thead>
                   <tr style={{
                     position: 'sticky', top: 0, zIndex: 1,
@@ -353,33 +362,33 @@ export default function ResultClient() {
                     const yoyDiff = i > 0 ? r.totalAssets - rows[i - 1].totalAssets : null;
                     return (
                       <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
-                        {/* 1. 年（下2桁） */}
-                        <td className="py-1 px-2 whitespace-nowrap font-mono" style={{ color: SUB }}>
+                        {/* 1. 年 */}
+                        <td className="py-1 px-2 font-mono" style={{ color: SUB }}>
                           {r.year}
                         </td>
-                        {/* 2. 齢（数字のみ） */}
-                        <td className="py-1 px-2 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                        {/* 2. 齢 */}
+                        <td className="py-1 px-2 text-right font-mono" style={{ color: NAVY }}>
                           {r.age}
                         </td>
                         {/* 3. 総資産 + ホバー内訳 */}
-                        <td className="py-1 px-2 text-right whitespace-nowrap">
+                        <td className="py-1 px-2 text-right">
                           <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
                         </td>
                         {/* 4. 配当 */}
-                        <td className="py-1 px-2 text-right font-mono whitespace-nowrap"
+                        <td className="py-1 px-2 text-right font-mono"
                           style={{ color: preRetirement ? SUB : NAVY }}>
                           {preRetirement ? '—' : tbl(r.dividendIncome)}
                         </td>
                         {/* 5. 年金 */}
-                        <td className="py-1 px-2 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                        <td className="py-1 px-2 text-right font-mono" style={{ color: SUB }}>
                           {preRetirement ? '—' : tbl(otherIncome)}
                         </td>
                         {/* 6. 支出 */}
-                        <td className="py-1 px-2 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                        <td className="py-1 px-2 text-right font-mono" style={{ color: SUB }}>
                           {tbl(r.livingExpense)}
                         </td>
                         {/* 7. ± */}
-                        <td className="py-1 px-2 text-right font-mono font-semibold whitespace-nowrap"
+                        <td className="py-1 px-2 text-right font-mono font-semibold"
                           style={{ color: preRetirement ? SUB : r.balance >= 0 ? GREEN : RED }}>
                           {preRetirement ? '—' : tblSigned(r.balance)}
                         </td>
