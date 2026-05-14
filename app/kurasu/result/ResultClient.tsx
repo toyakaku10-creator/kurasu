@@ -324,13 +324,13 @@ export default function ResultClient() {
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch' }}>
               <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '10px', tableLayout: 'fixed' }}>
                 <colgroup>
-                  <col style={{ width: '36px' }} />  {/* 年 */}
-                  <col style={{ width: '24px' }} />  {/* 齢 */}
-                  <col />  {/* 総資産 */}
-                  <col />  {/* 配当 */}
-                  <col />  {/* 年金 */}
-                  <col />  {/* 支出 */}
-                  <col />  {/* ± */}
+                  <col style={{ width: '9%'  }} />  {/* 年 */}
+                  <col style={{ width: '6%'  }} />  {/* 齢 */}
+                  <col style={{ width: '22%' }} />  {/* 総資産（広め） */}
+                  <col style={{ width: '13%' }} />  {/* 配当 */}
+                  <col style={{ width: '13%' }} />  {/* 年金 */}
+                  <col style={{ width: '13%' }} />  {/* 支出 */}
+                  <col style={{ width: '24%' }} />  {/* ± （広め） */}
                 </colgroup>
                 <thead>
                   <tr style={{
