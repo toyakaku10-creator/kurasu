@@ -340,13 +340,13 @@ export default function ResultClient() {
                     boxShadow: `0 1px 0 ${BORDER}`,
                   }}>
                     {[
-                      { label: '年',   align: 'left'  },
+                      { label: '西暦', align: 'left'  },
                       { label: '齢',   align: 'right' },
                       { label: '総資産', align: 'right' },
                       { label: '配当', align: 'right' },
                       { label: '年金', align: 'right' },
                       { label: '支出', align: 'right' },
-                      { label: '±',   align: 'right' },
+                      { label: '差引', align: 'right' },
                     ].map(({ label, align }) => (
                       <th key={label}
                         className="py-1 px-1 font-semibold whitespace-nowrap"
