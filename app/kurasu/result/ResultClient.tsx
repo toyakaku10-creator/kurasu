@@ -232,54 +232,89 @@ export default function ResultClient() {
           </ChartCard>
 
           {/* Table */}
-          <div className="rounded-2xl p-5 overflow-x-auto"
+          <div className="rounded-2xl overflow-hidden"
             style={{ background: BG, border: `1px solid ${BORDER}`, boxShadow: '0 1px 4px rgba(0,0,0,.07)' }}>
-            <h2 className="text-sm font-bold mb-4" style={{ color: NAVY }}>年齢別推移テーブル</h2>
-            <table className="w-full text-xs border-collapse min-w-[640px]">
-              <thead>
-                <tr style={{ borderBottom: `2px solid ${BORDER}` }}>
-                  {['年齢', '総資産', '配当（税後）', '年金等', '生活費', '収支'].map((h, i) => (
-                    <th key={h}
-                      className={`py-2 font-semibold ${i === 0 ? 'text-left pr-4' : 'text-right pr-4'}`}
-                      style={{ color: SUB }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.age}
-                    style={{
-                      borderBottom: `1px solid ${BORDER}`,
-                      background: r.isFIREYear ? `${GOLD}15` : undefined,
-                    }}>
-                    <td className="py-1.5 pr-4 font-mono font-medium" style={{ color: NAVY }}>
-                      {r.age}歳
-                      {r.isFIREYear && (
-                        <span className="ml-1 text-xs font-bold" style={{ color: GOLD }}>★</span>
-                      )}
-                    </td>
-                    <td className="text-right pr-4 font-mono font-medium" style={{ color: NAVY }}>
-                      {man(r.totalAssets)}
-                    </td>
-                    <td className="text-right pr-4 font-mono font-semibold" style={{ color: GOLD }}>
-                      {man(r.dividendIncome)}
-                    </td>
-                    <td className="text-right pr-4 font-mono" style={{ color: CHART.pension }}>
-                      {man(r.pensionPublic + r.pensionBenefit + r.iDeCoIncome)}
-                    </td>
-                    <td className="text-right pr-4 font-mono" style={{ color: SUB }}>
-                      {man(r.livingExpense)}
-                    </td>
-                    <td className="text-right font-mono font-bold"
-                      style={{ color: r.balance >= 0 ? GREEN : RED }}>
-                      {r.balance >= 0 ? '+' : ''}{man(r.balance)}
-                    </td>
+            <div className="px-5 pt-5 pb-3">
+              <h2 className="text-sm font-bold" style={{ color: NAVY }}>年間別推移テーブル</h2>
+            </div>
+            {/* scroll container — both axes, sticky header works inside a single overflow:auto */}
+            <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px' }}>
+              <table className="text-xs border-collapse" style={{ minWidth: '640px', width: '100%' }}>
+                <thead>
+                  <tr style={{
+                    position: 'sticky', top: 0, zIndex: 1,
+                    background: CARD,
+                    boxShadow: `0 1px 0 ${BORDER}`,
+                  }}>
+                    {[
+                      { label: '年齢',     align: 'left'  },
+                      { label: '年',       align: 'right' },
+                      { label: '配当収入', align: 'right' },
+                      { label: '総収入',   align: 'right' },
+                      { label: '生活費',   align: 'right' },
+                      { label: '収支',     align: 'right' },
+                      { label: '総資産',   align: 'right' },
+                    ].map(({ label, align }) => (
+                      <th key={label}
+                        className="py-2.5 px-4 font-semibold whitespace-nowrap"
+                        style={{ color: SUB, textAlign: align as React.CSSProperties['textAlign'] }}>
+                        {label}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.map((r) => {
+                    const isFireRow = r.isFIREYear;
+                    const rowBg = isFireRow ? `${GOLD}18` : undefined;
+                    const textColor = isFireRow ? NAVY : NAVY;
+                    return (
+                      <tr key={r.age}
+                        style={{ borderBottom: `1px solid ${BORDER}`, background: rowBg }}>
+                        {/* 年齢 */}
+                        <td className="py-2 px-4 whitespace-nowrap font-mono font-semibold"
+                          style={{ color: isFireRow ? GOLD : NAVY }}>
+                          {r.age}歳
+                          {isFireRow && (
+                            <span className="ml-1.5 text-xs" style={{ color: GOLD }}>★ 自立</span>
+                          )}
+                        </td>
+                        {/* 年 */}
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
+                          style={{ color: SUB }}>
+                          {r.year}
+                        </td>
+                        {/* 配当収入 */}
+                        <td className="py-2 px-4 text-right font-mono font-semibold whitespace-nowrap"
+                          style={{ color: isFireRow ? GOLD : CHART.dividend }}>
+                          {man(r.dividendIncome)}
+                        </td>
+                        {/* 総収入 */}
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
+                          style={{ color: textColor }}>
+                          {man(r.totalIncome)}
+                        </td>
+                        {/* 生活費 */}
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
+                          style={{ color: SUB }}>
+                          {man(r.livingExpense)}
+                        </td>
+                        {/* 収支 */}
+                        <td className="py-2 px-4 text-right font-mono font-bold whitespace-nowrap"
+                          style={{ color: r.balance >= 0 ? GREEN : RED }}>
+                          {r.balance >= 0 ? '+' : ''}{man(r.balance)}
+                        </td>
+                        {/* 総資産 */}
+                        <td className="py-2 px-4 text-right font-mono font-medium whitespace-nowrap"
+                          style={{ color: textColor }}>
+                          {man(r.totalAssets)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Summary stats — subtle, bottom */}
