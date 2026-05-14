@@ -202,12 +202,6 @@ export default function InputClient() {
               onChange={(v) => set('goldGrowthRate', v)} min={0} max={0.15} step={0.001} display={pct} />
             <Slider label="現金・預金" value={params.cashAmount}
               onChange={(v) => set('cashAmount', v)} min={0} max={20_000_000} step={100_000} display={yen} />
-            <Slider label="暗号資産" value={params.cryptoAmount}
-              onChange={(v) => set('cryptoAmount', v)} min={0} max={5_000_000} step={50_000} display={yen} />
-            <Full>
-              <Slider label="暗号資産 成長率" value={params.cryptoGrowthRate}
-                onChange={(v) => set('cryptoGrowthRate', v)} min={0} max={1} step={0.01} display={pct} />
-            </Full>
           </Sec>
 
           <Sec title="生活費" icon="🏠">

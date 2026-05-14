@@ -49,7 +49,6 @@ const CHART = {
   stocks: GOLD,
   gold: GOLD_LIGHT,
   cash: '#64748b',
-  crypto: '#f97316',
   iDeCoFund: CYAN,
 };
 
@@ -360,7 +359,6 @@ export default function SimulatorClient() {
         株式: Math.round(r.stocks),
         金: Math.round(r.gold),
         現金: Math.round(r.cash),
-        暗号資産: Math.round(r.crypto),
         iDeCo: Math.round(r.iDeCoFund),
       })),
     [rows]
@@ -420,8 +418,6 @@ export default function SimulatorClient() {
               <NumInput label="金 保有額" value={params.goldAmount} onChange={(v) => set('goldAmount', v)} step={100_000} unit="円" />
               <NumInput label="金 成長率" value={params.goldGrowthRate * 100} onChange={(v) => set('goldGrowthRate', v / 100)} min={0} max={20} step={0.1} unit="%" />
               <NumInput label="現金・預金" value={params.cashAmount} onChange={(v) => set('cashAmount', v)} step={100_000} unit="円" />
-              <NumInput label="暗号資産" value={params.cryptoAmount} onChange={(v) => set('cryptoAmount', v)} step={10_000} unit="円" />
-              <NumInput label="暗号資産 成長率" value={params.cryptoGrowthRate * 100} onChange={(v) => set('cryptoGrowthRate', v / 100)} min={0} max={100} step={1} unit="%" />
             </Section>
 
             <Section title="生活費">
@@ -561,7 +557,6 @@ export default function SimulatorClient() {
                 <Area type="monotone" dataKey="株式" stackId="1" stroke={CHART.stocks} fill={CHART.stocks} fillOpacity={0.55} />
                 <Area type="monotone" dataKey="金" stackId="1" stroke={CHART.gold} fill={CHART.gold} fillOpacity={0.55} />
                 <Area type="monotone" dataKey="現金" stackId="1" stroke={CHART.cash} fill={CHART.cash} fillOpacity={0.55} />
-                <Area type="monotone" dataKey="暗号資産" stackId="1" stroke={CHART.crypto} fill={CHART.crypto} fillOpacity={0.55} />
                 <Area type="monotone" dataKey="iDeCo" stackId="1" stroke={CHART.iDeCoFund} fill={CHART.iDeCoFund} fillOpacity={0.55} />
               </AreaChart>
             </ResponsiveContainer>

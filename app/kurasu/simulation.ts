@@ -11,9 +11,6 @@ export interface Params {
   goldGrowthRate: number;
   // Cash
   cashAmount: number;
-  // Crypto
-  cryptoAmount: number;
-  cryptoGrowthRate: number;
   // Living expenses
   annualLivingExpense: number;
   inflationRate: number;
@@ -44,7 +41,6 @@ export interface YearRow {
   stocks: number;
   gold: number;
   cash: number;
-  crypto: number;
   iDeCoFund: number;
   totalAssets: number;
   dividendIncome: number;
@@ -69,8 +65,6 @@ export const DEFAULT_PARAMS: Params = {
   goldAmount: 3_000_000,
   goldGrowthRate: 0.04,
   cashAmount: 8_000_000,
-  cryptoAmount: 500_000,
-  cryptoGrowthRate: 0.15,
   annualLivingExpense: 3_000_000,
   inflationRate: 0.015,
   livingExpenseDecline: true,
@@ -124,7 +118,6 @@ export function simulate(params: Params): YearRow[] {
   let stocks = params.stockAmount;
   let gold = params.goldAmount;
   let cash = params.cashAmount;
-  let crypto = params.cryptoAmount;
   let iDeCoFund = 0;
   let iDeCoFundAtReceive = 0;
   let dividendFIREReached = false;
@@ -137,7 +130,6 @@ export function simulate(params: Params): YearRow[] {
     // Asset growth
     stocks *= 1 + params.stockGrowthRate;
     gold *= 1 + params.goldGrowthRate;
-    crypto *= 1 + params.cryptoGrowthRate;
 
     // iDeCo accumulation
     const isAccumulating = age <= params.iDeCoEndAge;
@@ -227,7 +219,7 @@ export function simulate(params: Params): YearRow[] {
     }
 
     const totalAssets =
-      Math.max(0, stocks) + gold + Math.max(0, cash) + crypto;
+      Math.max(0, stocks) + gold + Math.max(0, cash);
     const totalIncome =
       dividendAfterTax + iDeCoIncome + retirementIncome + pensionPublic + pensionBenefit;
 
@@ -237,7 +229,6 @@ export function simulate(params: Params): YearRow[] {
       stocks: Math.max(0, stocks),
       gold,
       cash: Math.max(0, cash),
-      crypto,
       iDeCoFund: age < params.iDeCoStartReceiveAge ? iDeCoFund : 0,
       totalAssets,
       dividendIncome: dividendAfterTax,

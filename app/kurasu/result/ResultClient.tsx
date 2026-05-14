@@ -31,7 +31,6 @@ const CHART = {
   stocks:        GOLD,
   gold:          '#d97706',
   cash:          '#9ca3af',
-  crypto:        '#f97316',
   iDeCoFund:     NAVY,
 };
 
@@ -143,7 +142,6 @@ export default function ResultClient() {
       株式: Math.round(r.stocks),
       金: Math.round(r.gold),
       現金: Math.round(r.cash),
-      暗号資産: Math.round(r.crypto),
       iDeCo: Math.round(r.iDeCoFund),
     })), [rows]);
 
@@ -227,8 +225,7 @@ export default function ResultClient() {
                 {fireAge && refLine(fireAge, '自立', GOLD)}
                 <Area type="monotone" dataKey="株式"   stackId="1" stroke={CHART.stocks}    fill={CHART.stocks}    fillOpacity={0.4} />
                 <Area type="monotone" dataKey="金"     stackId="1" stroke={CHART.gold}      fill={CHART.gold}      fillOpacity={0.4} />
-                <Area type="monotone" dataKey="現金"   stackId="1" stroke={CHART.cash}      fill={CHART.cash}      fillOpacity={0.4} />
-                <Area type="monotone" dataKey="暗号資産" stackId="1" stroke={CHART.crypto}  fill={CHART.crypto}    fillOpacity={0.4} />
+                <Area type="monotone" dataKey="現金"  stackId="1" stroke={CHART.cash}      fill={CHART.cash}      fillOpacity={0.4} />
                 <Area type="monotone" dataKey="iDeCo" stackId="1" stroke={CHART.iDeCoFund} fill={CHART.iDeCoFund} fillOpacity={0.4} />
               </AreaChart>
             </ResponsiveContainer>
