@@ -41,6 +41,17 @@ const man = (v: number) => {
   return `${Math.round(v).toLocaleString()}円`;
 };
 const manAxis = (v: number) => `${Math.round(v / 10_000).toLocaleString()}万`;
+// Table cell formatters — unit-free (万円 shown in header only)
+const tbl = (v: number) => {
+  if (v === 0) return '—';
+  const m = Math.round(v / 10_000);
+  return m === 0 ? '—' : m.toLocaleString();
+};
+const tblSigned = (v: number) => {
+  const m = Math.round(v / 10_000);
+  if (m === 0) return '—';
+  return (v > 0 ? '+' : '') + m.toLocaleString();
+};
 
 // ── localStorage ──────────────────────────────
 const LS_KEY = 'kurasu-params-v1';
@@ -112,15 +123,8 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
     >
-      <div style={{ cursor: 'default', borderBottom: `1px dashed ${BORDER}`, paddingBottom: 1 }}>
-        <div style={{ color: NAVY }}>{man(r.totalAssets)}</div>
-        <div style={{
-          fontSize: '0.62rem',
-          marginTop: 1,
-          color: yoyDiff === null ? SUB : yoyDiff >= 0 ? GREEN : RED,
-        }}>
-          {yoyDiff === null ? '—' : yoyDiff >= 0 ? `▲+${man(yoyDiff)}` : `▼${man(yoyDiff)}`}
-        </div>
+      <div style={{ cursor: 'default', borderBottom: `1px dashed ${BORDER}`, paddingBottom: 1, color: NAVY }}>
+        {tbl(r.totalAssets)}
       </div>
       {show && (
         <div style={{
@@ -314,11 +318,11 @@ export default function ResultClient() {
           <div className="rounded-2xl overflow-hidden"
             style={{ background: BG, border: `1px solid ${BORDER}`, boxShadow: '0 1px 4px rgba(0,0,0,.07)' }}>
             <div className="px-5 pt-5 pb-3">
-              <h2 className="text-sm font-bold" style={{ color: NAVY }}>年間別推移テーブル</h2>
+              <h2 className="text-sm font-bold" style={{ color: NAVY }}>年間別推移<span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円）</span></h2>
             </div>
             {/* scroll container — both axes, sticky header works inside a single overflow:auto */}
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch' }}>
-              <table className="text-xs border-collapse" style={{ minWidth: '640px', width: '100%' }}>
+              <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '10px' }}>
                 <thead>
                   <tr style={{
                     position: 'sticky', top: 0, zIndex: 1,
@@ -326,16 +330,16 @@ export default function ResultClient() {
                     boxShadow: `0 1px 0 ${BORDER}`,
                   }}>
                     {[
-                      { label: '西暦',       align: 'left'  },
-                      { label: '年齢',       align: 'right' },
-                      { label: '総資産',     align: 'right' },
-                      { label: '配当収入',   align: 'right' },
-                      { label: '年金収入', align: 'right' },
-                      { label: '生活費',     align: 'right' },
-                      { label: '収支',       align: 'right' },
+                      { label: '年',   align: 'left'  },
+                      { label: '齢',   align: 'right' },
+                      { label: '総資産', align: 'right' },
+                      { label: '配当', align: 'right' },
+                      { label: '年金', align: 'right' },
+                      { label: '支出', align: 'right' },
+                      { label: '±',   align: 'right' },
                     ].map(({ label, align }) => (
                       <th key={label}
-                        className="py-2.5 px-4 font-semibold whitespace-nowrap"
+                        className="py-1 px-1 font-semibold whitespace-nowrap"
                         style={{ color: SUB, textAlign: align as React.CSSProperties['textAlign'] }}>
                         {label}
                       </th>
@@ -349,35 +353,35 @@ export default function ResultClient() {
                     const yoyDiff = i > 0 ? r.totalAssets - rows[i - 1].totalAssets : null;
                     return (
                       <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
-                        {/* 1. 西暦 */}
-                        <td className="py-2 px-4 whitespace-nowrap font-mono" style={{ color: SUB }}>
-                          {r.year}
+                        {/* 1. 年（下2桁） */}
+                        <td className="py-1 px-1 whitespace-nowrap font-mono" style={{ color: SUB }}>
+                          {String(r.year).slice(-2)}
                         </td>
-                        {/* 2. 年齢 */}
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
-                          {r.age}歳
+                        {/* 2. 齢（数字のみ） */}
+                        <td className="py-1 px-1 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                          {r.age}
                         </td>
-                        {/* 3. 総資産 + 前年比 + ホバー内訳 */}
-                        <td className="py-2 px-4 text-right whitespace-nowrap">
+                        {/* 3. 総資産 + ホバー内訳 */}
+                        <td className="py-1 px-1 text-right whitespace-nowrap">
                           <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
                         </td>
-                        {/* 4. 配当収入 */}
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
+                        {/* 4. 配当 */}
+                        <td className="py-1 px-1 text-right font-mono whitespace-nowrap"
                           style={{ color: preRetirement ? SUB : NAVY }}>
-                          {preRetirement ? '再投資中' : man(r.dividendIncome)}
+                          {preRetirement ? '—' : tbl(r.dividendIncome)}
                         </td>
-                        {/* 5. 年金収入 */}
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
-                          {preRetirement ? '在職中' : man(otherIncome)}
+                        {/* 5. 年金 */}
+                        <td className="py-1 px-1 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                          {preRetirement ? '—' : tbl(otherIncome)}
                         </td>
-                        {/* 6. 生活費 */}
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
-                          {man(r.livingExpense)}
+                        {/* 6. 支出 */}
+                        <td className="py-1 px-1 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                          {tbl(r.livingExpense)}
                         </td>
-                        {/* 7. 収支 */}
-                        <td className="py-2 px-4 text-right font-mono font-semibold whitespace-nowrap"
+                        {/* 7. ± */}
+                        <td className="py-1 px-1 text-right font-mono font-semibold whitespace-nowrap"
                           style={{ color: preRetirement ? SUB : r.balance >= 0 ? GREEN : RED }}>
-                          {preRetirement ? '在職中' : `${r.balance >= 0 ? '+' : ''}${man(r.balance)}`}
+                          {preRetirement ? '—' : tblSigned(r.balance)}
                         </td>
                       </tr>
                     );
