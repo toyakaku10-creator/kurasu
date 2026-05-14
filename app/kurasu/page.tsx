@@ -5,11 +5,8 @@ import dynamic from 'next/dynamic';
 const InputClient = dynamic(() => import('./InputClient'), {
   ssr: false,
   loading: () => (
-    <div
-      className="min-h-screen flex items-center justify-center"
-      style={{ background: '#0F2340', color: '#C9A84C' }}
-    >
-      Loading…
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <span className="text-sm" style={{ color: '#C9A84C' }}>Loading…</span>
     </div>
   ),
 });

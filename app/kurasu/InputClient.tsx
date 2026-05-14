@@ -6,36 +6,36 @@ import { DEFAULT_PARAMS } from './simulation';
 import type { Params } from './simulation';
 
 // ── Design tokens ─────────────────────────────
-const GOLD = '#C9A84C';
-const BG = '#0F2340';
-const CARD = '#1a2e4a';
-const CARD_DARK = '#12263d';
-const BORDER = '#1e3a57';
-const SUB = '#94a3b8';
+const GOLD   = '#C9A84C';
+const NAVY   = '#0F2340';
+const BG     = '#FFFFFF';
+const CARD   = '#F8F9FA';
+const BORDER = '#E9ECEF';
+const SUB    = '#6B7280';
 
 const SLIDER_CSS = `
   .sg { -webkit-appearance:none; appearance:none; height:4px; border-radius:2px;
         outline:none; cursor:pointer; width:100%; }
-  .sg::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px;
+  .sg::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px;
     border-radius:50%; background:${GOLD}; cursor:pointer;
-    border:2px solid ${CARD_DARK}; box-shadow:0 0 8px ${GOLD}66;
+    border:2px solid #fff; box-shadow:0 1px 6px rgba(0,0,0,.2);
     transition:box-shadow .15s; }
-  .sg:hover::-webkit-slider-thumb { box-shadow:0 0 16px ${GOLD}aa; }
-  .sg::-moz-range-thumb { width:20px; height:20px; border-radius:50%;
-    background:${GOLD}; cursor:pointer; border:2px solid ${CARD_DARK};
-    box-shadow:0 0 8px ${GOLD}66; }
+  .sg:hover::-webkit-slider-thumb { box-shadow:0 2px 10px ${GOLD}88; }
+  .sg::-moz-range-thumb { width:18px; height:18px; border-radius:50%;
+    background:${GOLD}; cursor:pointer; border:2px solid #fff;
+    box-shadow:0 1px 6px rgba(0,0,0,.2); }
 `;
 
 // ── Formatters ────────────────────────────────
-const yen = (v: number) => {
+const yen  = (v: number) => {
   if (v >= 100_000_000) return `${(v / 100_000_000).toFixed(1)}億円`;
   if (v >= 10_000) return `${Math.round(v / 10_000)}万円`;
   return `${v.toLocaleString()}円`;
 };
 const yenM = (v: number) => `${v.toLocaleString()}円/月`;
-const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
-const age = (v: number) => `${v}歳`;
-const yr = (v: number) => `${v}年`;
+const pct  = (v: number) => `${(v * 100).toFixed(1)}%`;
+const age  = (v: number) => `${v}歳`;
+const yr   = (v: number) => `${v}年`;
 
 // ── localStorage ──────────────────────────────
 const LS_KEY = 'kurasu-params-v1';
@@ -47,80 +47,46 @@ function loadParams(): Params {
   } catch {}
   return DEFAULT_PARAMS;
 }
-
 function saveParams(p: Params) {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(p));
-  } catch {}
+  try { localStorage.setItem(LS_KEY, JSON.stringify(p)); } catch {}
 }
 
 // ── Slider ────────────────────────────────────
 function Slider({
-  label,
-  value,
-  onChange,
-  min,
-  max,
-  step,
-  display,
+  label, value, onChange, min, max, step, display,
 }: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  min: number;
-  max: number;
-  step: number;
-  display: (v: number) => string;
+  label: string; value: number; onChange: (v: number) => void;
+  min: number; max: number; step: number; display: (v: number) => string;
 }) {
   const fill = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-baseline gap-2">
-        <span className="text-xs" style={{ color: SUB }}>
-          {label}
-        </span>
-        <span className="text-sm font-bold tabular-nums flex-shrink-0" style={{ color: GOLD }}>
-          {display(value)}
-        </span>
+        <span className="text-xs font-medium" style={{ color: SUB }}>{label}</span>
+        <span className="text-sm font-bold tabular-nums flex-shrink-0" style={{ color: GOLD }}>{display(value)}</span>
       </div>
       <input
-        type="range"
-        className="sg"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
+        type="range" className="sg"
+        min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        style={{
-          background: `linear-gradient(to right, ${GOLD} 0%, ${GOLD} ${fill}%, ${BORDER} ${fill}%, ${BORDER} 100%)`,
-        }}
+        style={{ background: `linear-gradient(to right,${GOLD} 0%,${GOLD} ${fill}%,${BORDER} ${fill}%,${BORDER} 100%)` }}
       />
     </div>
   );
 }
 
 // ── Toggle ────────────────────────────────────
-function Toggle({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-}) {
+function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="flex items-center justify-between gap-2 py-1">
-      <span className="text-xs" style={{ color: SUB }}>
-        {label}
-      </span>
+      <span className="text-xs font-medium" style={{ color: SUB }}>{label}</span>
       <button
         onClick={() => onChange(!value)}
         className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
-        style={{ background: value ? GOLD : '#2a4a6a' }}
+        style={{ background: value ? GOLD : '#D1D5DB' }}
       >
         <span
-          className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform"
+          className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform"
           style={{ transform: value ? 'translateX(20px)' : 'translateX(0)' }}
         />
       </button>
@@ -128,36 +94,26 @@ function Toggle({
   );
 }
 
-// ── Section card ──────────────────────────────
-function Sec({
-  title,
-  icon,
-  children,
-  defaultOpen = true,
-}: {
-  title: string;
-  icon: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
+// ── Section ───────────────────────────────────
+function Sec({ title, icon, children, defaultOpen = true }: {
+  title: string; icon: string; children: React.ReactNode; defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${BORDER}` }}>
+    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${BORDER}`, background: BG, boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-4 text-sm font-bold transition-opacity hover:opacity-80"
-        style={{ background: CARD_DARK, color: GOLD }}
+        className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-bold transition-colors hover:bg-gray-50"
+        style={{ background: CARD, color: NAVY, borderBottom: open ? `1px solid ${BORDER}` : 'none' }}
       >
         <span className="flex items-center gap-2">
           <span>{icon}</span>
           <span>{title}</span>
         </span>
-        <span className="text-xs" style={{ color: SUB }}>
-          {open ? '▲' : '▼'}
-        </span>
+        <span className="text-xs font-normal" style={{ color: GOLD }}>{open ? '▲' : '▼'}</span>
       </button>
       {open && (
-        <div className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5" style={{ background: CARD }}>
+        <div className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6" style={{ background: BG }}>
           {children}
         </div>
       )}
@@ -165,7 +121,6 @@ function Sec({
   );
 }
 
-// ── Divider (full-width children) ─────────────
 function Full({ children }: { children: React.ReactNode }) {
   return <div className="col-span-1 sm:col-span-2">{children}</div>;
 }
@@ -175,9 +130,7 @@ export default function InputClient() {
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
   const router = useRouter();
 
-  useEffect(() => {
-    setParams(loadParams());
-  }, []);
+  useEffect(() => { setParams(loadParams()); }, []);
 
   const set = useCallback(
     <K extends keyof Params>(key: K, value: Params[K]) =>
@@ -191,19 +144,16 @@ export default function InputClient() {
   }, [params, router]);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: BG, color: '#fff' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: BG, color: NAVY }}>
       <style>{SLIDER_CSS}</style>
 
       {/* Header */}
       <header
         className="flex items-center justify-between px-6 py-4 flex-shrink-0"
-        style={{ background: CARD_DARK, borderBottom: `1px solid ${GOLD}44` }}
+        style={{ background: BG, borderBottom: `1px solid ${BORDER}` }}
       >
         <div>
-          <h1
-            className="text-2xl font-bold tracking-widest"
-            style={{ color: GOLD, fontFamily: 'Georgia, serif' }}
-          >
+          <h1 className="text-xl font-bold tracking-wider" style={{ color: NAVY }}>
             kurasu
           </h1>
           <p className="text-xs mt-0.5" style={{ color: SUB }}>
@@ -211,14 +161,14 @@ export default function InputClient() {
           </p>
         </div>
         <div
-          className="hidden sm:flex items-center gap-1 text-xs px-3 py-1 rounded-full"
-          style={{ background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}55` }}
+          className="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+          style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}55` }}
         >
-          ◆ Step 1 / 2
+          Step 1 / 2
         </div>
       </header>
 
-      {/* Scrollable form */}
+      {/* Form */}
       <main className="flex-1 overflow-y-auto pb-28">
         <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-4">
 
@@ -334,16 +284,12 @@ export default function InputClient() {
       {/* Fixed start button */}
       <footer
         className="fixed bottom-0 inset-x-0 px-4 py-4 flex justify-center"
-        style={{ background: `${BG}ee`, borderTop: `1px solid ${BORDER}`, backdropFilter: 'blur(8px)' }}
+        style={{ background: 'rgba(255,255,255,0.95)', borderTop: `1px solid ${BORDER}`, backdropFilter: 'blur(8px)' }}
       >
         <button
           onClick={handleStart}
-          className="w-full max-w-2xl py-4 rounded-2xl font-bold text-base tracking-wide transition-transform active:scale-95"
-          style={{
-            background: `linear-gradient(135deg, ${GOLD}, #e5c275)`,
-            color: '#0F2340',
-            boxShadow: `0 4px 24px ${GOLD}66`,
-          }}
+          className="w-full max-w-2xl py-4 rounded-2xl font-bold text-base tracking-wide transition-transform active:scale-95 hover:opacity-90"
+          style={{ background: GOLD, color: NAVY, boxShadow: `0 4px 20px ${GOLD}55` }}
         >
           シミュレーション開始 →
         </button>
