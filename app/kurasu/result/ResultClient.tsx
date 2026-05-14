@@ -264,32 +264,37 @@ export default function ResultClient() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => (
-                    <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
-                      <td className="py-2 px-4 whitespace-nowrap font-mono" style={{ color: SUB }}>
-                        {r.year}
-                      </td>
-                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
-                        {r.age}歳
-                      </td>
-                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
-                        {man(r.dividendIncome)}
-                      </td>
-                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
-                        {man(r.totalIncome)}
-                      </td>
-                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
-                        {man(r.livingExpense)}
-                      </td>
-                      <td className="py-2 px-4 text-right font-mono font-semibold whitespace-nowrap"
-                        style={{ color: r.balance >= 0 ? GREEN : RED }}>
-                        {r.balance >= 0 ? '+' : ''}{man(r.balance)}
-                      </td>
-                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
-                        {man(r.totalAssets)}
-                      </td>
-                    </tr>
-                  ))}
+                  {rows.map((r) => {
+                    const preRetirement = r.age < params.retirementAge;
+                    return (
+                      <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                        <td className="py-2 px-4 whitespace-nowrap font-mono" style={{ color: SUB }}>
+                          {r.year}
+                        </td>
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                          {r.age}歳
+                        </td>
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
+                          style={{ color: preRetirement ? SUB : NAVY }}>
+                          {preRetirement ? '再投資中' : man(r.dividendIncome)}
+                        </td>
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
+                          style={{ color: SUB }}>
+                          {preRetirement ? '在職中' : man(r.totalIncome)}
+                        </td>
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                          {man(r.livingExpense)}
+                        </td>
+                        <td className="py-2 px-4 text-right font-mono font-semibold whitespace-nowrap"
+                          style={{ color: preRetirement ? SUB : r.balance >= 0 ? GREEN : RED }}>
+                          {preRetirement ? '在職中' : `${r.balance >= 0 ? '+' : ''}${man(r.balance)}`}
+                        </td>
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                          {man(r.totalAssets)}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
