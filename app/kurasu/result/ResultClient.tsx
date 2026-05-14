@@ -247,8 +247,8 @@ export default function ResultClient() {
                     boxShadow: `0 1px 0 ${BORDER}`,
                   }}>
                     {[
-                      { label: '年齢',     align: 'left'  },
-                      { label: '年',       align: 'right' },
+                      { label: '西暦',     align: 'left'  },
+                      { label: '年齢',     align: 'right' },
                       { label: '配当収入', align: 'right' },
                       { label: '総収入',   align: 'right' },
                       { label: '生活費',   align: 'right' },
@@ -264,54 +264,32 @@ export default function ResultClient() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => {
-                    const isFireRow = r.isFIREYear;
-                    const rowBg = isFireRow ? `${GOLD}18` : undefined;
-                    const textColor = isFireRow ? NAVY : NAVY;
-                    return (
-                      <tr key={r.age}
-                        style={{ borderBottom: `1px solid ${BORDER}`, background: rowBg }}>
-                        {/* 年齢 */}
-                        <td className="py-2 px-4 whitespace-nowrap font-mono font-semibold"
-                          style={{ color: isFireRow ? GOLD : NAVY }}>
-                          {r.age}歳
-                          {isFireRow && (
-                            <span className="ml-1.5 text-xs" style={{ color: GOLD }}>★ 自立</span>
-                          )}
-                        </td>
-                        {/* 年 */}
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
-                          style={{ color: SUB }}>
-                          {r.year}
-                        </td>
-                        {/* 配当収入 */}
-                        <td className="py-2 px-4 text-right font-mono font-semibold whitespace-nowrap"
-                          style={{ color: isFireRow ? GOLD : CHART.dividend }}>
-                          {man(r.dividendIncome)}
-                        </td>
-                        {/* 総収入 */}
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
-                          style={{ color: textColor }}>
-                          {man(r.totalIncome)}
-                        </td>
-                        {/* 生活費 */}
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
-                          style={{ color: SUB }}>
-                          {man(r.livingExpense)}
-                        </td>
-                        {/* 収支 */}
-                        <td className="py-2 px-4 text-right font-mono font-bold whitespace-nowrap"
-                          style={{ color: r.balance >= 0 ? GREEN : RED }}>
-                          {r.balance >= 0 ? '+' : ''}{man(r.balance)}
-                        </td>
-                        {/* 総資産 */}
-                        <td className="py-2 px-4 text-right font-mono font-medium whitespace-nowrap"
-                          style={{ color: textColor }}>
-                          {man(r.totalAssets)}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {rows.map((r) => (
+                    <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                      <td className="py-2 px-4 whitespace-nowrap font-mono" style={{ color: SUB }}>
+                        {r.year}
+                      </td>
+                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                        {r.age}歳
+                      </td>
+                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                        {man(r.dividendIncome)}
+                      </td>
+                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                        {man(r.totalIncome)}
+                      </td>
+                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                        {man(r.livingExpense)}
+                      </td>
+                      <td className="py-2 px-4 text-right font-mono font-semibold whitespace-nowrap"
+                        style={{ color: r.balance >= 0 ? GREEN : RED }}>
+                        {r.balance >= 0 ? '+' : ''}{man(r.balance)}
+                      </td>
+                      <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                        {man(r.totalAssets)}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
