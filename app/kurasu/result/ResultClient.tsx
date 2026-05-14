@@ -201,7 +201,7 @@ export default function ResultClient() {
   const milestones = useMemo(() => {
     const ms: Array<{ age: number; label: string; sub: string }> = [
       { age: params.retirementAge, label: '退職', sub: `退職金 ${man(params.retirementPayment)}` },
-      { age: params.iDeCoStartReceiveAge, label: 'iDeCo 受取開始', sub: '20年均等払い' },
+      { age: params.iDeCoStartReceiveAge, label: 'iDeCo 一時金受取', sub: `加入${params.iDeCoYearsOfMembership}年・退職所得控除適用` },
       { age: params.pensionStartAge, label: '年金 受取開始', sub: `月 ${man(params.pensionMonthly)}` },
     ];
     if (fireAge) ms.push({ age: fireAge, label: '自立達成', sub: '配当が生活費を超える' });

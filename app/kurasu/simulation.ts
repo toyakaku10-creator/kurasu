@@ -23,6 +23,7 @@ export interface Params {
   iDeCoReturn: number;
   iDeCoEndAge: number;
   iDeCoStartReceiveAge: number;
+  iDeCoYearsOfMembership: number;
   // Retirement
   retirementAge: number;
   retirementPayment: number;
@@ -75,6 +76,7 @@ export const DEFAULT_PARAMS: Params = {
   iDeCoReturn: 0.04,
   iDeCoEndAge: 60,
   iDeCoStartReceiveAge: 65,
+  iDeCoYearsOfMembership: 14,
   retirementAge: 60,
   retirementPayment: 21_000_000,
   yearsOfService: 35,
@@ -101,6 +103,17 @@ function progressiveIncomeTax(income: number): number {
   return Math.max(0, income * 0.45 - 4_796_000);
 }
 
+function iDeCoLumpSumAfterTax(fund: number, yearsOfMembership: number): number {
+  const deduction =
+    yearsOfMembership <= 20
+      ? 400_000 * yearsOfMembership
+      : 8_000_000 + 700_000 * (yearsOfMembership - 20);
+  const taxableIncome = Math.max(0, (fund - deduction)) * 0.5;
+  const incomeTax = progressiveIncomeTax(taxableIncome);
+  const residenceTax = taxableIncome * 0.10;
+  return fund - incomeTax - residenceTax;
+}
+
 function retirementAfterTax(payment: number, yearsOfService: number): number {
   const deduction =
     yearsOfService <= 20
@@ -119,7 +132,6 @@ export function simulate(params: Params): YearRow[] {
   let gold = params.goldAmount;
   let cash = params.cashAmount;
   let iDeCoFund = 0;
-  let iDeCoFundAtReceive = 0;
   let dividendFIREReached = false;
 
   const retirementNet = retirementAfterTax(params.retirementPayment, params.yearsOfService);
@@ -137,9 +149,6 @@ export function simulate(params: Params): YearRow[] {
       ? (year >= 2027 ? params.iDeCoMonthly2027 : params.iDeCoMonthly) * 12
       : 0;
     iDeCoFund = iDeCoFund * (1 + params.iDeCoReturn) + annualContrib;
-    if (age === params.iDeCoStartReceiveAge) {
-      iDeCoFundAtReceive = iDeCoFund;
-    }
 
     // Dividend (after tax, NISA-adjusted)
     const dividendGross = stocks * params.stockDividendRate;
@@ -167,15 +176,14 @@ export function simulate(params: Params): YearRow[] {
       else cash += retirementIncome;
     }
 
-    // iDeCo annuity
+    // iDeCo lump-sum payout
     let iDeCoIncome = 0;
-    const inAnnuityPhase =
-      age >= params.iDeCoStartReceiveAge &&
-      age < params.iDeCoStartReceiveAge + 20;
-    if (inAnnuityPhase) {
-      iDeCoIncome = iDeCoFundAtReceive / 20;
-      if (params.reinvestRetirement) stocks += iDeCoIncome;
-      else cash += iDeCoIncome;
+    if (age === params.iDeCoStartReceiveAge) {
+      const net = iDeCoLumpSumAfterTax(iDeCoFund, params.iDeCoYearsOfMembership);
+      iDeCoIncome = net;
+      if (params.reinvestRetirement) stocks += net;
+      else cash += net;
+      iDeCoFund = 0;
     }
 
     // Public pension (after 公的年金等控除 & 15% tax on excess)

@@ -235,10 +235,10 @@ export default function InputClient() {
               onChange={(v) => set('iDeCoReturn', v)} min={0} max={0.10} step={0.001} display={pct} />
             <Slider label="拠出終了年齢" value={params.iDeCoEndAge}
               onChange={(v) => set('iDeCoEndAge', v)} min={50} max={75} step={1} display={age} />
-            <Full>
-              <Slider label="受取開始年齢" value={params.iDeCoStartReceiveAge}
-                onChange={(v) => set('iDeCoStartReceiveAge', v)} min={60} max={75} step={1} display={age} />
-            </Full>
+            <Slider label="一時金受取年齢" value={params.iDeCoStartReceiveAge}
+              onChange={(v) => set('iDeCoStartReceiveAge', v)} min={60} max={75} step={1} display={age} />
+            <Slider label="加入年数（退職所得控除の計算に使用）" value={params.iDeCoYearsOfMembership}
+              onChange={(v) => set('iDeCoYearsOfMembership', v)} min={1} max={40} step={1} display={yr} />
           </Sec>
 
           <Sec title="退職" icon="🎌">
