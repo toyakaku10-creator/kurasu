@@ -77,35 +77,6 @@ function CustomTooltip({ active, payload, label }: TipProps) {
   );
 }
 
-// ── Badge ─────────────────────────────────────
-function Badge({ label, value, sub, variant = 'default' }: {
-  label: string; value: string; sub?: string;
-  variant?: 'gold' | 'navy' | 'default';
-}) {
-  const styles: Record<string, React.CSSProperties> = {
-    gold:    { background: GOLD,  color: NAVY,  border: 'none' },
-    navy:    { background: NAVY,  color: '#fff', border: 'none' },
-    default: { background: CARD,  color: NAVY,  border: `1px solid ${BORDER}` },
-  };
-  const st = styles[variant];
-  return (
-    <div className="rounded-2xl p-5 flex flex-col gap-1"
-      style={{ ...st, boxShadow: '0 1px 4px rgba(0,0,0,.07)' }}>
-      <span className="text-xs font-medium"
-        style={{ color: variant === 'default' ? SUB : variant === 'gold' ? `${NAVY}aa` : '#ffffffaa' }}>
-        {label}
-      </span>
-      <span className="text-3xl font-bold">{value}</span>
-      {sub && (
-        <span className="text-xs"
-          style={{ color: variant === 'default' ? SUB : variant === 'gold' ? `${NAVY}99` : '#ffffff88' }}>
-          {sub}
-        </span>
-      )}
-    </div>
-  );
-}
-
 // ── Milestone card ────────────────────────────
 function MilestoneCard({ age, label, sub }: { age: number; label: string; sub: string }) {
   return (
@@ -211,20 +182,6 @@ export default function ResultClient() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col gap-6">
 
-          {/* Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Badge label="配当自立年齢"
-              value={fireAge ? `${fireAge}歳` : '—'}
-              sub="配当自立の達成年齢" variant="gold" />
-            <Badge label="収支黒字化年齢"
-              value={surplusAge ? `${surplusAge}歳` : '—'}
-              sub="総収入 ≥ 生活費" variant="navy" />
-            <Badge label="資産寿命"
-              value={assetLifetime ? `${assetLifetime}歳まで` : '100歳超'}
-              sub={assetBad ? '⚠ 要確認' : '✓ 安心水準'}
-              variant={assetBad ? 'default' : 'navy'} />
-          </div>
-
           {/* Milestones */}
           <div>
             <h2 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: SUB }}>
@@ -327,6 +284,23 @@ export default function ResultClient() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Summary stats — subtle, bottom */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { label: '配当自立年齢',   value: fireAge       ? `${fireAge}歳`              : '—',      note: '配当収入が生活費を超える年齢' },
+              { label: '収支黒字化年齢', value: surplusAge    ? `${surplusAge}歳`            : '—',      note: '総収入が生活費を上回る年齢'   },
+              { label: '資産寿命',       value: assetLifetime ? `${assetLifetime}歳まで`     : '100歳超', note: assetBad ? '要確認' : '安心水準' },
+            ].map(({ label, value, note }) => (
+              <div key={label}
+                className="flex flex-col gap-0.5 px-4 py-3 rounded-xl"
+                style={{ border: `1px solid ${BORDER}`, background: BG }}>
+                <span className="text-xs" style={{ color: SUB }}>{label}</span>
+                <span className="text-lg font-semibold tabular-nums" style={{ color: NAVY }}>{value}</span>
+                <span className="text-xs" style={{ color: '#9ca3af' }}>{note}</span>
+              </div>
+            ))}
           </div>
 
           {/* Bottom back button */}
