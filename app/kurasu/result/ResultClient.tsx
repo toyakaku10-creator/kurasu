@@ -322,15 +322,15 @@ export default function ResultClient() {
             </div>
             {/* scroll container — both axes, sticky header works inside a single overflow:auto */}
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch' }}>
-              <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '12px', tableLayout: 'fixed' }}>
+              <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '14px', tableLayout: 'fixed' }}>
                 <colgroup>
-                  <col style={{ width:  '9%' }} />  {/* 西暦   4桁 */}
-                  <col style={{ width:  '8%' }} />  {/* 齢     3桁 */}
-                  <col style={{ width: '19%' }} />  {/* 総資産 9桁 */}
+                  <col style={{ width: '14%' }} />  {/* 西暦   4桁 */}
+                  <col style={{ width:  '9%' }} />  {/* 齢     3桁 */}
+                  <col style={{ width: '18%' }} />  {/* 総資産 9桁 */}
                   <col style={{ width: '15%' }} />  {/* 配当   7桁 */}
-                  <col style={{ width: '14%' }} />  {/* 年金   6桁 */}
-                  <col style={{ width: '14%' }} />  {/* 支出   6桁 */}
-                  <col style={{ width: '21%' }} />  {/* 収支   8桁 */}
+                  <col style={{ width: '12%' }} />  {/* 年金   6桁 */}
+                  <col style={{ width: '12%' }} />  {/* 支出   6桁 */}
+                  <col style={{ width: '20%' }} />  {/* 収支   8桁 */}
                 </colgroup>
                 <thead>
                   <tr style={{
