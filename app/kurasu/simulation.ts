@@ -54,6 +54,14 @@ export interface YearRow {
   balance: number;
   isFIREYear: boolean;
   fireBadge: boolean;
+  // Asset change breakdown (for tooltip)
+  assetAppreciation: number;
+  dividendReinvest: number;
+  retirementReinvest: number;
+  iDeCoReinvest: number;
+  surplusReinvest: number;
+  cashDrawdown: number;
+  stockDrawdown: number;
 }
 
 export const DEFAULT_PARAMS: Params = {
@@ -140,8 +148,11 @@ export function simulate(params: Params): YearRow[] {
     const year = params.currentYear + (age - params.currentAge);
 
     // Asset growth
+    const stocksBefore = stocks;
+    const goldBefore = gold;
     stocks *= 1 + params.stockGrowthRate;
     gold *= 1 + params.goldGrowthRate;
+    const assetAppreciation = (stocks - stocksBefore) + (gold - goldBefore);
 
     // iDeCo accumulation
     const isAccumulating = age <= params.iDeCoEndAge;
@@ -170,19 +181,25 @@ export function simulate(params: Params): YearRow[] {
 
     // One-time retirement income
     let retirementIncome = 0;
+    let retirementReinvest = 0;
     if (age === params.retirementAge) {
       retirementIncome = retirementNet;
-      if (params.reinvestRetirement) stocks += retirementIncome;
-      else cash += retirementIncome;
+      if (params.reinvestRetirement) {
+        stocks += retirementIncome;
+        retirementReinvest = retirementIncome;
+      } else cash += retirementIncome;
     }
 
     // iDeCo lump-sum payout
     let iDeCoIncome = 0;
+    let iDeCoReinvest = 0;
     if (age === params.iDeCoStartReceiveAge) {
       const net = iDeCoLumpSumAfterTax(iDeCoFund, params.iDeCoYearsOfMembership);
       iDeCoIncome = net;
-      if (params.reinvestRetirement) stocks += net;
-      else cash += net;
+      if (params.reinvestRetirement) {
+        stocks += net;
+        iDeCoReinvest = net;
+      } else cash += net;
       iDeCoFund = 0;
     }
 
@@ -208,22 +225,32 @@ export function simulate(params: Params): YearRow[] {
     const balance = spendableIncome - livingExpense;
 
     // Asset draw / reinvest
+    let dividendReinvest = 0;
+    let surplusReinvest = 0;
+    let cashDrawdown = 0;
+    let stockDrawdown = 0;
+
     if (dividendFIREReached) {
       if (balance > 0) {
         stocks += balance;
+        surplusReinvest = balance;
       } else {
         const deficit = -balance;
         if (cash >= deficit) {
           cash -= deficit;
+          cashDrawdown = deficit;
         } else {
           const remaining = deficit - cash;
+          cashDrawdown = cash;
           cash = 0;
           stocks = Math.max(0, stocks - remaining);
+          stockDrawdown = remaining;
         }
       }
     } else {
       // Pre-FIRE: reinvest dividends
       stocks += dividendAfterTax;
+      dividendReinvest = dividendAfterTax;
     }
 
     const totalAssets =
@@ -249,6 +276,13 @@ export function simulate(params: Params): YearRow[] {
       balance,
       isFIREYear,
       fireBadge: dividendFIREReached,
+      assetAppreciation,
+      dividendReinvest,
+      retirementReinvest,
+      iDeCoReinvest,
+      surplusReinvest,
+      cashDrawdown,
+      stockDrawdown,
     });
   }
 

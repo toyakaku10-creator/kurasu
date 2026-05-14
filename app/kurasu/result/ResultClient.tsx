@@ -93,6 +93,83 @@ function MilestoneCard({ age, label, sub }: { age: number; label: string; sub: s
   );
 }
 
+// ── Total-assets breakdown cell ───────────────
+function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null }) {
+  const [show, setShow] = useState(false);
+
+  const items: Array<{ label: string; value: number }> = [];
+  if (r.assetAppreciation > 0)  items.push({ label: '株式・金評価増',  value:  r.assetAppreciation });
+  if (r.dividendReinvest > 0)   items.push({ label: '配当再投資',       value:  r.dividendReinvest });
+  if (r.retirementReinvest > 0) items.push({ label: '退職金再投資',     value:  r.retirementReinvest });
+  if (r.iDeCoReinvest > 0)      items.push({ label: 'iDeCo再投資',      value:  r.iDeCoReinvest });
+  if (r.surplusReinvest > 0)    items.push({ label: '余剰再投資',        value:  r.surplusReinvest });
+  if (r.cashDrawdown > 0)       items.push({ label: '生活費補填',        value: -r.cashDrawdown });
+  if (r.stockDrawdown > 0)      items.push({ label: '取り崩し',          value: -r.stockDrawdown });
+
+  return (
+    <div
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <div style={{ cursor: 'default', borderBottom: `1px dashed ${BORDER}`, paddingBottom: 1 }}>
+        <div style={{ color: NAVY }}>{man(r.totalAssets)}</div>
+        <div style={{
+          fontSize: '0.62rem',
+          marginTop: 1,
+          color: yoyDiff === null ? SUB : yoyDiff >= 0 ? GREEN : RED,
+        }}>
+          {yoyDiff === null ? '—' : yoyDiff >= 0 ? `▲+${man(yoyDiff)}` : `▼${man(yoyDiff)}`}
+        </div>
+      </div>
+      {show && (
+        <div style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 6px)',
+          right: 0,
+          background: BG,
+          border: `1px solid ${BORDER}`,
+          borderRadius: 10,
+          padding: '10px 14px',
+          boxShadow: '0 4px 16px rgba(0,0,0,.10)',
+          zIndex: 50,
+          minWidth: 230,
+          whiteSpace: 'nowrap',
+          textAlign: 'left',
+        }}>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: NAVY, marginBottom: 3 }}>
+            総資産 {man(r.totalAssets)}
+          </div>
+          {yoyDiff !== null && (
+            <div style={{ fontSize: '0.65rem', marginBottom: 8, color: yoyDiff >= 0 ? GREEN : RED }}>
+              前年比 {yoyDiff >= 0 ? '+' : ''}{man(yoyDiff)}
+            </div>
+          )}
+          {items.length > 0 && (
+            <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 6 }}>
+              <div style={{ fontSize: '0.6rem', color: SUB, marginBottom: 4 }}>内訳</div>
+              {items.map(({ label, value }) => (
+                <div key={label} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: 20,
+                  fontSize: '0.65rem',
+                  marginBottom: 3,
+                }}>
+                  <span style={{ color: SUB }}>{label}</span>
+                  <span style={{ fontFamily: 'monospace', color: value >= 0 ? GREEN : RED }}>
+                    {value >= 0 ? '+' : ''}{man(value)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Other-income breakdown cell ───────────────
 function OtherIncomeCell({
   r,
@@ -361,20 +438,9 @@ export default function ResultClient() {
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
                           {r.age}歳
                         </td>
-                        {/* 3. 総資産 + 前年比 */}
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
-                          <div>{man(r.totalAssets)}</div>
-                          <div style={{
-                            fontSize: '0.62rem',
-                            marginTop: 1,
-                            color: yoyDiff === null ? SUB : yoyDiff >= 0 ? GREEN : RED,
-                          }}>
-                            {yoyDiff === null
-                              ? '—'
-                              : yoyDiff >= 0
-                                ? `▲+${man(yoyDiff)}`
-                                : `▼${man(yoyDiff)}`}
-                          </div>
+                        {/* 3. 総資産 + 前年比 + ホバー内訳 */}
+                        <td className="py-2 px-4 text-right whitespace-nowrap">
+                          <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
                         </td>
                         {/* 4. 配当収入 */}
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
