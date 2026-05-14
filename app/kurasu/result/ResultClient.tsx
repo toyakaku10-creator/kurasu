@@ -247,13 +247,13 @@ export default function ResultClient() {
                     boxShadow: `0 1px 0 ${BORDER}`,
                   }}>
                     {[
-                      { label: '西暦',     align: 'left'  },
-                      { label: '年齢',     align: 'right' },
-                      { label: '配当収入', align: 'right' },
-                      { label: '総収入',   align: 'right' },
-                      { label: '生活費',   align: 'right' },
-                      { label: '収支',     align: 'right' },
-                      { label: '総資産',   align: 'right' },
+                      { label: '西暦',       align: 'left'  },
+                      { label: '年齢',       align: 'right' },
+                      { label: '総資産',     align: 'right' },
+                      { label: '配当収入',   align: 'right' },
+                      { label: 'その他収入', align: 'right' },
+                      { label: '生活費',     align: 'right' },
+                      { label: '収支',       align: 'right' },
                     ].map(({ label, align }) => (
                       <th key={label}
                         className="py-2.5 px-4 font-semibold whitespace-nowrap"
@@ -266,31 +266,38 @@ export default function ResultClient() {
                 <tbody>
                   {rows.map((r) => {
                     const preRetirement = r.age < params.retirementAge;
+                    const otherIncome = r.iDeCoIncome + r.retirementIncome + r.pensionPublic + r.pensionBenefit;
                     return (
                       <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                        {/* 1. 西暦 */}
                         <td className="py-2 px-4 whitespace-nowrap font-mono" style={{ color: SUB }}>
                           {r.year}
                         </td>
+                        {/* 2. 年齢 */}
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
                           {r.age}歳
                         </td>
+                        {/* 3. 総資産 */}
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                          {man(r.totalAssets)}
+                        </td>
+                        {/* 4. 配当収入 */}
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
                           style={{ color: preRetirement ? SUB : NAVY }}>
                           {preRetirement ? '再投資中' : man(r.dividendIncome)}
                         </td>
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
-                          style={{ color: SUB }}>
-                          {preRetirement ? '在職中' : man(r.totalIncome)}
+                        {/* 5. その他収入 */}
+                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                          {preRetirement ? '在職中' : man(otherIncome)}
                         </td>
+                        {/* 6. 生活費 */}
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
                           {man(r.livingExpense)}
                         </td>
+                        {/* 7. 収支 */}
                         <td className="py-2 px-4 text-right font-mono font-semibold whitespace-nowrap"
                           style={{ color: preRetirement ? SUB : r.balance >= 0 ? GREEN : RED }}>
                           {preRetirement ? '在職中' : `${r.balance >= 0 ? '+' : ''}${man(r.balance)}`}
-                        </td>
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
-                          {man(r.totalAssets)}
                         </td>
                       </tr>
                     );
