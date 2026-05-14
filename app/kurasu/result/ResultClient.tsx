@@ -9,7 +9,7 @@ import {
 import {
   simulate, DEFAULT_PARAMS, getFireAge, getSurplusAge, getAssetLifetime,
 } from '../simulation';
-import type { Params } from '../simulation';
+import type { Params, YearRow } from '../simulation';
 
 // ── Design tokens ─────────────────────────────
 const GOLD   = '#C9A84C';
@@ -89,6 +89,88 @@ function MilestoneCard({ age, label, sub }: { age: number; label: string; sub: s
         <div className="text-sm font-semibold" style={{ color: NAVY }}>{label}</div>
         <div className="text-xs" style={{ color: SUB }}>{sub}</div>
       </div>
+    </div>
+  );
+}
+
+// ── Other-income breakdown cell ───────────────
+function OtherIncomeCell({
+  r,
+  reinvestRetirement,
+  otherIncome,
+  preRetirement,
+}: {
+  r: YearRow;
+  reinvestRetirement: boolean;
+  otherIncome: number;
+  preRetirement: boolean;
+}) {
+  const [show, setShow] = useState(false);
+
+  if (preRetirement) {
+    return <span style={{ color: SUB }}>在職中</span>;
+  }
+
+  const items: Array<{ label: string; value: string }> = [];
+  if (r.pensionPublic > 0)
+    items.push({ label: '公的年金', value: man(r.pensionPublic) });
+  if (r.pensionBenefit > 0)
+    items.push({ label: '年金払退職給付', value: man(r.pensionBenefit) });
+  if (r.iDeCoIncome > 0)
+    items.push({ label: 'iDeCo', value: reinvestRetirement ? '再投資中' : man(r.iDeCoIncome) });
+  if (r.retirementIncome > 0)
+    items.push({ label: '退職金', value: reinvestRetirement ? '再投資中' : man(r.retirementIncome) });
+
+  if (items.length === 0) {
+    return <span style={{ color: SUB }}>—</span>;
+  }
+
+  return (
+    <div
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span style={{
+        color: SUB,
+        cursor: 'default',
+        borderBottom: `1px dashed ${BORDER}`,
+        paddingBottom: 1,
+      }}>
+        {otherIncome === 0 ? '—' : man(otherIncome)}
+      </span>
+      {show && (
+        <div style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 6px)',
+          right: 0,
+          background: BG,
+          border: `1px solid ${BORDER}`,
+          borderRadius: 10,
+          padding: '10px 14px',
+          boxShadow: '0 4px 16px rgba(0,0,0,.10)',
+          zIndex: 50,
+          minWidth: 210,
+          whiteSpace: 'nowrap',
+          textAlign: 'left',
+        }}>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: NAVY, marginBottom: 6 }}>
+            その他収入 内訳
+          </div>
+          {items.map(({ label, value }) => (
+            <div key={label} style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 20,
+              fontSize: '0.65rem',
+              marginBottom: 3,
+            }}>
+              <span style={{ color: SUB }}>{label}</span>
+              <span style={{ fontFamily: 'monospace', color: NAVY }}>{value}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -265,9 +347,10 @@ export default function ResultClient() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => {
+                  {rows.map((r, i) => {
                     const preRetirement = r.age < params.retirementAge;
                     const otherIncome = (params.reinvestRetirement ? 0 : r.retirementIncome + r.iDeCoIncome) + r.pensionPublic + r.pensionBenefit;
+                    const yoyDiff = i > 0 ? r.totalAssets - rows[i - 1].totalAssets : null;
                     return (
                       <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
                         {/* 1. 西暦 */}
@@ -278,18 +361,34 @@ export default function ResultClient() {
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
                           {r.age}歳
                         </td>
-                        {/* 3. 総資産 */}
+                        {/* 3. 総資産 + 前年比 */}
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
-                          {man(r.totalAssets)}
+                          <div>{man(r.totalAssets)}</div>
+                          <div style={{
+                            fontSize: '0.62rem',
+                            marginTop: 1,
+                            color: yoyDiff === null ? SUB : yoyDiff >= 0 ? GREEN : RED,
+                          }}>
+                            {yoyDiff === null
+                              ? '—'
+                              : yoyDiff >= 0
+                                ? `▲+${man(yoyDiff)}`
+                                : `▼${man(yoyDiff)}`}
+                          </div>
                         </td>
                         {/* 4. 配当収入 */}
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap"
                           style={{ color: preRetirement ? SUB : NAVY }}>
                           {preRetirement ? '再投資中' : man(r.dividendIncome)}
                         </td>
-                        {/* 5. その他収入 */}
-                        <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
-                          {preRetirement ? '在職中' : man(otherIncome)}
+                        {/* 5. その他収入（ホバー内訳） */}
+                        <td className="py-2 px-4 text-right whitespace-nowrap">
+                          <OtherIncomeCell
+                            r={r}
+                            reinvestRetirement={params.reinvestRetirement}
+                            otherIncome={otherIncome}
+                            preRetirement={preRetirement}
+                          />
                         </td>
                         {/* 6. 生活費 */}
                         <td className="py-2 px-4 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
