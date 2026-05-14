@@ -334,7 +334,7 @@ export default function ResultClient() {
                       { label: '年齢',       align: 'right' },
                       { label: '総資産',     align: 'right' },
                       { label: '配当収入',   align: 'right' },
-                      { label: 'その他収入', align: 'right' },
+                      { label: '年金収入', align: 'right' },
                       { label: '生活費',     align: 'right' },
                       { label: '収支',       align: 'right' },
                     ].map(({ label, align }) => (
