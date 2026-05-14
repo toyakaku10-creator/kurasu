@@ -36,6 +36,7 @@ const CHART = {
 
 // ── Formatters ────────────────────────────────
 const man = (v: number) => {
+  if (v === 0) return '—';
   if (Math.abs(v) >= 10_000) return `${Math.round(v / 10_000).toLocaleString()}万`;
   return `${Math.round(v).toLocaleString()}円`;
 };
@@ -266,7 +267,7 @@ export default function ResultClient() {
                 <tbody>
                   {rows.map((r) => {
                     const preRetirement = r.age < params.retirementAge;
-                    const otherIncome = r.iDeCoIncome + r.retirementIncome + r.pensionPublic + r.pensionBenefit;
+                    const otherIncome = (params.reinvestRetirement ? 0 : r.retirementIncome + r.iDeCoIncome) + r.pensionPublic + r.pensionBenefit;
                     return (
                       <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
                         {/* 1. 西暦 */}
