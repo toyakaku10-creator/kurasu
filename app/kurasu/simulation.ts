@@ -230,7 +230,13 @@ export function simulate(params: Params): YearRow[] {
     let cashDrawdown = 0;
     let stockDrawdown = 0;
 
-    if (dividendFIREReached) {
+    const isRetired = age >= params.retirementAge;
+    if (!isRetired) {
+      // Pre-retirement: salary covers living expenses, reinvest dividends fully
+      stocks += dividendAfterTax;
+      dividendReinvest = dividendAfterTax;
+    } else {
+      // Post-retirement: dividends are income; reinvest surplus or draw down assets
       if (balance > 0) {
         stocks += balance;
         surplusReinvest = balance;
@@ -247,10 +253,6 @@ export function simulate(params: Params): YearRow[] {
           stockDrawdown = remaining;
         }
       }
-    } else {
-      // Pre-FIRE: reinvest dividends
-      stocks += dividendAfterTax;
-      dividendReinvest = dividendAfterTax;
     }
 
     const totalAssets =
