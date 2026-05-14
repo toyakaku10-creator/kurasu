@@ -22,7 +22,36 @@ import {
   getSurplusAge,
   getAssetLifetime,
 } from './simulation';
-import type { Params, YearRow } from './simulation';
+import type { Params } from './simulation';
+
+// ──────────────────────────────────────────────
+// Design tokens
+// ──────────────────────────────────────────────
+const GOLD = '#C9A84C';
+const GOLD_LIGHT = '#e5c275';
+const CYAN = '#06b6d4';
+const CYAN_LIGHT = '#38bdf8';
+const BG = '#0F2340';
+const CARD = '#1a2e4a';
+const CARD_DARK = '#12263d';
+const BORDER = '#1e3a57';
+const SUB = '#94a3b8';
+const RED = '#ef4444';
+
+// Chart palette
+const CHART = {
+  dividend: GOLD,
+  ideco: CYAN,
+  retirement: GOLD_LIGHT,
+  pension: CYAN_LIGHT,
+  pensionBenefit: '#7dd3fc',
+  expense: RED,
+  stocks: GOLD,
+  gold: GOLD_LIGHT,
+  cash: '#64748b',
+  crypto: '#f97316',
+  iDeCoFund: CYAN,
+};
 
 // ──────────────────────────────────────────────
 // Formatters
@@ -33,7 +62,6 @@ const man = (v: number) =>
     : `${Math.round(v).toLocaleString()}円`;
 
 const manAxis = (v: number) => `${(v / 10_000).toFixed(0)}万`;
-const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 
 // ──────────────────────────────────────────────
 // LocalStorage
@@ -55,10 +83,14 @@ function saveParams(p: Params) {
 }
 
 // ──────────────────────────────────────────────
-// Small UI helpers
+// UI helpers
 // ──────────────────────────────────────────────
 function Label({ children }: { children: React.ReactNode }) {
-  return <span className="text-xs text-slate-400 leading-none">{children}</span>;
+  return (
+    <span className="text-xs leading-none" style={{ color: SUB }}>
+      {children}
+    </span>
+  );
 }
 
 function NumInput({
@@ -89,9 +121,20 @@ function NumInput({
           max={max}
           step={step}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full bg-slate-700 text-slate-100 text-sm rounded px-2 py-1 border border-slate-600 focus:outline-none focus:border-emerald-500"
+          className="w-full text-sm rounded px-2 py-1.5 outline-none transition-colors"
+          style={{
+            background: CARD_DARK,
+            color: '#fff',
+            border: `1px solid ${BORDER}`,
+          }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = GOLD)}
+          onBlur={(e) => (e.currentTarget.style.borderColor = BORDER)}
         />
-        {unit && <span className="text-xs text-slate-400 whitespace-nowrap">{unit}</span>}
+        {unit && (
+          <span className="text-xs whitespace-nowrap" style={{ color: SUB }}>
+            {unit}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -111,14 +154,12 @@ function Toggle({
       <Label>{label}</Label>
       <button
         onClick={() => onChange(!value)}
-        className={`relative w-10 h-5 rounded-full transition-colors ${
-          value ? 'bg-emerald-500' : 'bg-slate-600'
-        }`}
+        className="relative w-10 h-5 rounded-full transition-colors flex-shrink-0"
+        style={{ background: value ? GOLD : '#2a4a6a' }}
       >
         <span
-          className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
-            value ? 'translate-x-5' : 'translate-x-0'
-          }`}
+          className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform"
+          style={{ transform: value ? 'translateX(20px)' : 'translateX(0)' }}
         />
       </button>
     </div>
@@ -134,15 +175,23 @@ function Section({
 }) {
   const [open, setOpen] = useState(true);
   return (
-    <div className="border border-slate-700 rounded-lg overflow-hidden">
+    <div className="rounded-lg overflow-hidden" style={{ border: `1px solid ${BORDER}` }}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-slate-800 text-slate-200 text-sm font-semibold hover:bg-slate-750"
+        className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold transition-opacity hover:opacity-80"
+        style={{ background: CARD_DARK, color: GOLD }}
       >
         <span>{title}</span>
-        <span className="text-slate-400">{open ? '▲' : '▼'}</span>
+        <span style={{ color: SUB }}>{open ? '▲' : '▼'}</span>
       </button>
-      {open && <div className="p-3 grid grid-cols-2 gap-3 bg-slate-900">{children}</div>}
+      {open && (
+        <div
+          className="p-3 grid grid-cols-2 gap-3"
+          style={{ background: CARD }}
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -150,16 +199,33 @@ function Section({
 function Badge({
   label,
   value,
-  color,
+  sub,
+  highlight,
 }: {
   label: string;
   value: string;
-  color: string;
+  sub?: string;
+  highlight?: boolean;
 }) {
   return (
-    <div className={`rounded-xl p-4 flex flex-col gap-1 ${color}`}>
-      <span className="text-xs text-white/70 font-medium">{label}</span>
-      <span className="text-2xl font-bold text-white">{value}</span>
+    <div
+      className="rounded-xl p-4 flex flex-col gap-1"
+      style={{
+        background: CARD,
+        border: `1px solid ${highlight ? GOLD : BORDER}`,
+        boxShadow: highlight ? `0 0 16px ${GOLD}33` : undefined,
+      }}
+    >
+      <span className="text-xs font-medium" style={{ color: SUB }}>
+        {label}
+      </span>
+      <span
+        className="text-2xl font-bold"
+        style={{ color: highlight ? GOLD : '#fff' }}
+      >
+        {value}
+      </span>
+      {sub && <span className="text-xs" style={{ color: SUB }}>{sub}</span>}
     </div>
   );
 }
@@ -174,20 +240,28 @@ function MilestoneCard({
   sub: string;
 }) {
   return (
-    <div className="flex items-center gap-3 bg-slate-800 rounded-lg px-3 py-2">
-      <div className="bg-slate-700 rounded-full w-10 h-10 flex items-center justify-center text-sm font-bold text-emerald-400">
+    <div
+      className="flex items-center gap-3 rounded-lg px-3 py-2"
+      style={{ background: CARD, border: `1px solid ${BORDER}` }}
+    >
+      <div
+        className="rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center text-sm font-bold"
+        style={{ background: CARD_DARK, color: GOLD, border: `1px solid ${GOLD}55` }}
+      >
         {age}
       </div>
       <div>
-        <div className="text-sm font-semibold text-slate-100">{label}</div>
-        <div className="text-xs text-slate-400">{sub}</div>
+        <div className="text-sm font-semibold text-white">{label}</div>
+        <div className="text-xs" style={{ color: SUB }}>
+          {sub}
+        </div>
       </div>
     </div>
   );
 }
 
 // ──────────────────────────────────────────────
-// Custom recharts tooltip
+// Custom tooltip
 // ──────────────────────────────────────────────
 interface TooltipProps {
   active?: boolean;
@@ -198,12 +272,20 @@ interface TooltipProps {
 function CustomTooltip({ active, payload, label }: TooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 text-xs shadow-xl">
-      <p className="font-bold text-slate-100 mb-2">{label}歳</p>
+    <div
+      className="rounded-lg p-3 text-xs shadow-2xl"
+      style={{
+        background: CARD_DARK,
+        border: `1px solid ${GOLD}55`,
+      }}
+    >
+      <p className="font-bold mb-2" style={{ color: GOLD }}>
+        {label}歳
+      </p>
       {payload.map((p) => (
         <div key={p.name} className="flex justify-between gap-4">
           <span style={{ color: p.color }}>{p.name}</span>
-          <span className="text-slate-200 font-mono">{man(p.value)}</span>
+          <span className="font-mono text-white">{man(p.value)}</span>
         </div>
       ))}
     </div>
@@ -216,12 +298,10 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
 export default function SimulatorClient() {
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
 
-  // Load from localStorage on mount
   useEffect(() => {
     setParams(loadParams());
   }, []);
 
-  // Save on change
   useEffect(() => {
     saveParams(params);
   }, [params]);
@@ -237,7 +317,6 @@ export default function SimulatorClient() {
   const surplusAge = useMemo(() => getSurplusAge(rows), [rows]);
   const assetLifetime = useMemo(() => getAssetLifetime(rows), [rows]);
 
-  // Milestone data for cards
   const milestones = useMemo(() => {
     const ms: Array<{ age: number; label: string; sub: string }> = [];
     ms.push({
@@ -246,25 +325,20 @@ export default function SimulatorClient() {
       sub: `退職金 ${man(params.retirementPayment)}`,
     });
     if (fireAge)
-      ms.push({
-        age: fireAge,
-        label: 'FIRE達成',
-        sub: '配当が生活費を超える',
-      });
+      ms.push({ age: fireAge, label: 'FIRE 達成', sub: '配当が生活費を超える' });
     ms.push({
       age: params.iDeCoStartReceiveAge,
-      label: 'iDeCo受取開始',
+      label: 'iDeCo 受取開始',
       sub: '20年均等払い',
     });
     ms.push({
       age: params.pensionStartAge,
-      label: '年金受取開始',
-      sub: `月${man(params.pensionMonthly)}`,
+      label: '年金 受取開始',
+      sub: `月 ${man(params.pensionMonthly)}`,
     });
     return ms.sort((a, b) => a.age - b.age);
   }, [params, fireAge]);
 
-  // Chart data: income vs expense
   const incomeChartData = useMemo(
     () =>
       rows.map((r) => ({
@@ -279,7 +353,6 @@ export default function SimulatorClient() {
     [rows]
   );
 
-  // Chart data: total assets
   const assetChartData = useMemo(
     () =>
       rows.map((r) => ({
@@ -289,41 +362,73 @@ export default function SimulatorClient() {
         現金: Math.round(r.cash),
         暗号資産: Math.round(r.crypto),
         iDeCo: Math.round(r.iDeCoFund),
-        総資産: Math.round(r.totalAssets),
       })),
     [rows]
   );
 
+  const chartAxisProps = { fill: SUB, fontSize: 11 };
+  const gridProps = { strokeDasharray: '3 3', stroke: '#1e3a57' };
+  const legendStyle = { fontSize: 11, color: SUB };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Header */}
-      <header className="bg-slate-900 border-b border-slate-800 px-6 py-4">
-        <h1 className="text-xl font-bold text-emerald-400">配当で暮らす ライフプランシミュレーター</h1>
-        <p className="text-xs text-slate-400 mt-0.5">配当収入で生活費をカバーするFIREプランを試算</p>
+    <div className="min-h-screen flex flex-col" style={{ background: BG, color: '#fff' }}>
+      {/* ── Header ── */}
+      <header
+        className="flex items-center justify-between px-6 py-4 flex-shrink-0"
+        style={{
+          background: CARD_DARK,
+          borderBottom: `1px solid ${GOLD}44`,
+        }}
+      >
+        <div>
+          <h1
+            className="text-2xl font-bold tracking-widest"
+            style={{ color: GOLD, fontFamily: 'Georgia, serif' }}
+          >
+            kurasu
+          </h1>
+          <p className="text-xs mt-0.5" style={{ color: SUB }}>
+            配当で暮らすライフプランシミュレーター
+          </p>
+        </div>
+        <div
+          className="hidden sm:flex items-center gap-1 text-xs px-3 py-1 rounded-full"
+          style={{ background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}55` }}
+        >
+          <span>◆</span>
+          <span>Dividend FIRE</span>
+        </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row flex-1 gap-0">
-        {/* ── Left sidebar: params ── */}
-        <aside className="w-full lg:w-80 xl:w-96 flex-shrink-0 bg-slate-900 border-r border-slate-800 p-4 overflow-y-auto lg:max-h-screen lg:sticky lg:top-0">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        {/* ── Left sidebar ── */}
+        <aside
+          className="w-full lg:w-80 xl:w-96 flex-shrink-0 p-4 overflow-y-auto lg:max-h-screen lg:sticky lg:top-0"
+          style={{ background: CARD_DARK, borderRight: `1px solid ${BORDER}` }}
+        >
           <div className="flex flex-col gap-3">
+            <Section title="基本情報">
+              <NumInput label="現在年齢" value={params.currentAge} onChange={(v) => set('currentAge', v)} min={20} max={90} step={1} unit="歳" />
+              <NumInput label="現在年（西暦）" value={params.currentYear} onChange={(v) => set('currentYear', v)} min={2020} max={2050} step={1} unit="年" />
+            </Section>
 
             <Section title="資産">
-              <NumInput label="株式 保有額 (円)" value={params.stockAmount} onChange={(v) => set('stockAmount', v)} step={100_000} unit="円" />
+              <NumInput label="株式 保有額" value={params.stockAmount} onChange={(v) => set('stockAmount', v)} step={100_000} unit="円" />
               <NumInput label="株式 成長率" value={params.stockGrowthRate * 100} onChange={(v) => set('stockGrowthRate', v / 100)} min={0} max={30} step={0.1} unit="%" />
               <NumInput label="配当率" value={params.stockDividendRate * 100} onChange={(v) => set('stockDividendRate', v / 100)} min={0} max={20} step={0.1} unit="%" />
               <NumInput label="NISA比率" value={params.stockNisaRatio * 100} onChange={(v) => set('stockNisaRatio', v / 100)} min={0} max={100} step={1} unit="%" />
-              <NumInput label="金 保有額 (円)" value={params.goldAmount} onChange={(v) => set('goldAmount', v)} step={100_000} unit="円" />
+              <NumInput label="金 保有額" value={params.goldAmount} onChange={(v) => set('goldAmount', v)} step={100_000} unit="円" />
               <NumInput label="金 成長率" value={params.goldGrowthRate * 100} onChange={(v) => set('goldGrowthRate', v / 100)} min={0} max={20} step={0.1} unit="%" />
-              <NumInput label="現金・預金 (円)" value={params.cashAmount} onChange={(v) => set('cashAmount', v)} step={100_000} unit="円" />
-              <NumInput label="暗号資産 (円)" value={params.cryptoAmount} onChange={(v) => set('cryptoAmount', v)} step={10_000} unit="円" />
+              <NumInput label="現金・預金" value={params.cashAmount} onChange={(v) => set('cashAmount', v)} step={100_000} unit="円" />
+              <NumInput label="暗号資産" value={params.cryptoAmount} onChange={(v) => set('cryptoAmount', v)} step={10_000} unit="円" />
               <NumInput label="暗号資産 成長率" value={params.cryptoGrowthRate * 100} onChange={(v) => set('cryptoGrowthRate', v / 100)} min={0} max={100} step={1} unit="%" />
             </Section>
 
             <Section title="生活費">
-              <NumInput label="年間生活費 (円)" value={params.annualLivingExpense} onChange={(v) => set('annualLivingExpense', v)} step={100_000} unit="円" />
+              <NumInput label="年間生活費" value={params.annualLivingExpense} onChange={(v) => set('annualLivingExpense', v)} step={100_000} unit="円" />
               <NumInput label="インフレ率" value={params.inflationRate * 100} onChange={(v) => set('inflationRate', v / 100)} min={0} max={10} step={0.1} unit="%" />
               <div className="col-span-2">
-                <Toggle label="生活費逓減 (70歳以降)" value={params.livingExpenseDecline} onChange={(v) => set('livingExpenseDecline', v)} />
+                <Toggle label="生活費逓減（統計カーブ）" value={params.livingExpenseDecline} onChange={(v) => set('livingExpenseDecline', v)} />
               </div>
               {params.livingExpenseDecline && (
                 <>
@@ -334,8 +439,8 @@ export default function SimulatorClient() {
             </Section>
 
             <Section title="iDeCo">
-              <NumInput label="月額掛金 (円)" value={params.iDeCoMonthly} onChange={(v) => set('iDeCoMonthly', v)} step={1_000} unit="円" />
-              <NumInput label="2027年以降 月額 (円)" value={params.iDeCoMonthly2027} onChange={(v) => set('iDeCoMonthly2027', v)} step={1_000} unit="円" />
+              <NumInput label="月額掛金" value={params.iDeCoMonthly} onChange={(v) => set('iDeCoMonthly', v)} step={1_000} unit="円" />
+              <NumInput label="2027年以降 月額" value={params.iDeCoMonthly2027} onChange={(v) => set('iDeCoMonthly2027', v)} step={1_000} unit="円" />
               <NumInput label="利回り" value={params.iDeCoReturn * 100} onChange={(v) => set('iDeCoReturn', v / 100)} min={0} max={20} step={0.1} unit="%" />
               <NumInput label="拠出終了年齢" value={params.iDeCoEndAge} onChange={(v) => set('iDeCoEndAge', v)} min={50} max={75} step={1} unit="歳" />
               <NumInput label="受取開始年齢" value={params.iDeCoStartReceiveAge} onChange={(v) => set('iDeCoStartReceiveAge', v)} min={60} max={75} step={1} unit="歳" />
@@ -343,14 +448,14 @@ export default function SimulatorClient() {
 
             <Section title="退職">
               <NumInput label="退職年齢" value={params.retirementAge} onChange={(v) => set('retirementAge', Math.max(60, v))} min={60} max={75} step={1} unit="歳" />
-              <NumInput label="退職金 (円)" value={params.retirementPayment} onChange={(v) => set('retirementPayment', v)} step={100_000} unit="円" />
+              <NumInput label="退職金" value={params.retirementPayment} onChange={(v) => set('retirementPayment', v)} step={100_000} unit="円" />
               <NumInput label="勤続年数" value={params.yearsOfService} onChange={(v) => set('yearsOfService', v)} min={1} max={50} step={1} unit="年" />
             </Section>
 
             <Section title="年金">
-              <NumInput label="厚生年金+基礎年金 (月額)" value={params.pensionMonthly} onChange={(v) => set('pensionMonthly', v)} step={5_000} unit="円" />
+              <NumInput label="厚生+基礎年金（月額）" value={params.pensionMonthly} onChange={(v) => set('pensionMonthly', v)} step={5_000} unit="円" />
               <NumInput label="受取開始年齢" value={params.pensionStartAge} onChange={(v) => set('pensionStartAge', v)} min={60} max={75} step={1} unit="歳" />
-              <NumInput label="年金払退職給付 (月額)" value={params.pensionRetirementBenefitMonthly} onChange={(v) => set('pensionRetirementBenefitMonthly', v)} step={1_000} unit="円" />
+              <NumInput label="年金払退職給付（月額）" value={params.pensionRetirementBenefitMonthly} onChange={(v) => set('pensionRetirementBenefitMonthly', v)} step={1_000} unit="円" />
             </Section>
 
             <Section title="再投資オプション">
@@ -358,12 +463,6 @@ export default function SimulatorClient() {
                 <Toggle label="退職金・iDeCoを株式に再投資" value={params.reinvestRetirement} onChange={(v) => set('reinvestRetirement', v)} />
               </div>
             </Section>
-
-            <Section title="基本情報">
-              <NumInput label="現在年齢" value={params.currentAge} onChange={(v) => set('currentAge', v)} min={20} max={90} step={1} unit="歳" />
-              <NumInput label="現在年（西暦）" value={params.currentYear} onChange={(v) => set('currentYear', v)} min={2020} max={2050} step={1} unit="年" />
-            </Section>
-
           </div>
         </aside>
 
@@ -375,27 +474,26 @@ export default function SimulatorClient() {
             <Badge
               label="配当で暮らせる年齢"
               value={fireAge ? `${fireAge}歳` : '—'}
-              color="bg-emerald-700"
+              sub="FIRE達成年齢"
+              highlight
             />
             <Badge
               label="収支黒字化年齢"
               value={surplusAge ? `${surplusAge}歳` : '—'}
-              color="bg-blue-700"
+              sub="総収入 ≥ 生活費"
             />
             <Badge
               label="資産寿命"
               value={assetLifetime ? `${assetLifetime}歳まで` : '100歳超'}
-              color={
-                assetLifetime && assetLifetime < 90
-                  ? 'bg-rose-700'
-                  : 'bg-violet-700'
-              }
+              sub={assetLifetime && assetLifetime < 90 ? '要注意' : '安心水準'}
             />
           </div>
 
           {/* Milestones */}
           <div>
-            <h2 className="text-sm font-semibold text-slate-400 mb-2">マイルストーン</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: GOLD }}>
+              マイルストーン
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
               {milestones.map((m) => (
                 <MilestoneCard key={m.label} age={m.age} label={m.label} sub={m.sub} />
@@ -404,99 +502,130 @@ export default function SimulatorClient() {
           </div>
 
           {/* Income vs Expense Chart */}
-          <div className="bg-slate-900 rounded-xl p-4 border border-slate-800">
-            <h2 className="text-sm font-semibold text-slate-300 mb-4">収入 vs 支出</h2>
+          <div
+            className="rounded-xl p-4"
+            style={{ background: CARD, border: `1px solid ${BORDER}` }}
+          >
+            <h2 className="text-sm font-semibold mb-4" style={{ color: GOLD }}>
+              収入 vs 支出
+            </h2>
             <ResponsiveContainer width="100%" height={320}>
               <ComposedChart data={incomeChartData} margin={{ top: 4, right: 16, bottom: 0, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="age" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={(v) => `${v}歳`} />
-                <YAxis tickFormatter={manAxis} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                <CartesianGrid {...gridProps} />
+                <XAxis dataKey="age" tick={chartAxisProps} tickFormatter={(v) => `${v}歳`} />
+                <YAxis tickFormatter={manAxis} tick={chartAxisProps} />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
+                <Legend wrapperStyle={legendStyle} />
                 {fireAge && (
-                  <ReferenceLine x={fireAge} stroke="#10b981" strokeDasharray="4 4" label={{ value: 'FIRE', fill: '#10b981', fontSize: 10, position: 'top' }} />
+                  <ReferenceLine
+                    x={fireAge}
+                    stroke={GOLD}
+                    strokeDasharray="4 4"
+                    label={{ value: 'FIRE', fill: GOLD, fontSize: 10, position: 'top' }}
+                  />
                 )}
-                {params.retirementAge && (
-                  <ReferenceLine x={params.retirementAge} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: '退職', fill: '#f59e0b', fontSize: 10, position: 'top' }} />
-                )}
-                <Bar dataKey="配当" stackId="income" fill="#10b981" />
-                <Bar dataKey="iDeCo" stackId="income" fill="#3b82f6" />
-                <Bar dataKey="退職金" stackId="income" fill="#f59e0b" />
-                <Bar dataKey="公的年金" stackId="income" fill="#8b5cf6" />
-                <Bar dataKey="年金払退職給付" stackId="income" fill="#ec4899" />
-                <Line dataKey="生活費" stroke="#ef4444" strokeWidth={2} dot={false} />
+                <ReferenceLine
+                  x={params.retirementAge}
+                  stroke={GOLD_LIGHT}
+                  strokeDasharray="4 4"
+                  label={{ value: '退職', fill: GOLD_LIGHT, fontSize: 10, position: 'top' }}
+                />
+                <Bar dataKey="配当" stackId="income" fill={CHART.dividend} />
+                <Bar dataKey="iDeCo" stackId="income" fill={CHART.ideco} />
+                <Bar dataKey="退職金" stackId="income" fill={CHART.retirement} />
+                <Bar dataKey="公的年金" stackId="income" fill={CHART.pension} />
+                <Bar dataKey="年金払退職給付" stackId="income" fill={CHART.pensionBenefit} />
+                <Line dataKey="生活費" stroke={CHART.expense} strokeWidth={2} dot={false} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
 
           {/* Total Assets Chart */}
-          <div className="bg-slate-900 rounded-xl p-4 border border-slate-800">
-            <h2 className="text-sm font-semibold text-slate-300 mb-4">総資産推移</h2>
+          <div
+            className="rounded-xl p-4"
+            style={{ background: CARD, border: `1px solid ${BORDER}` }}
+          >
+            <h2 className="text-sm font-semibold mb-4" style={{ color: GOLD }}>
+              総資産推移
+            </h2>
             <ResponsiveContainer width="100%" height={320}>
               <AreaChart data={assetChartData} margin={{ top: 4, right: 16, bottom: 0, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="age" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={(v) => `${v}歳`} />
-                <YAxis tickFormatter={manAxis} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                <CartesianGrid {...gridProps} />
+                <XAxis dataKey="age" tick={chartAxisProps} tickFormatter={(v) => `${v}歳`} />
+                <YAxis tickFormatter={manAxis} tick={chartAxisProps} />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
+                <Legend wrapperStyle={legendStyle} />
                 {fireAge && (
-                  <ReferenceLine x={fireAge} stroke="#10b981" strokeDasharray="4 4" />
+                  <ReferenceLine x={fireAge} stroke={GOLD} strokeDasharray="4 4" label={{ value: 'FIRE', fill: GOLD, fontSize: 10, position: 'top' }} />
                 )}
-                <Area type="monotone" dataKey="株式" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
-                <Area type="monotone" dataKey="金" stackId="1" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
-                <Area type="monotone" dataKey="現金" stackId="1" stroke="#6b7280" fill="#6b7280" fillOpacity={0.6} />
-                <Area type="monotone" dataKey="暗号資産" stackId="1" stroke="#f97316" fill="#f97316" fillOpacity={0.6} />
-                <Area type="monotone" dataKey="iDeCo" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
+                <Area type="monotone" dataKey="株式" stackId="1" stroke={CHART.stocks} fill={CHART.stocks} fillOpacity={0.55} />
+                <Area type="monotone" dataKey="金" stackId="1" stroke={CHART.gold} fill={CHART.gold} fillOpacity={0.55} />
+                <Area type="monotone" dataKey="現金" stackId="1" stroke={CHART.cash} fill={CHART.cash} fillOpacity={0.55} />
+                <Area type="monotone" dataKey="暗号資産" stackId="1" stroke={CHART.crypto} fill={CHART.crypto} fillOpacity={0.55} />
+                <Area type="monotone" dataKey="iDeCo" stackId="1" stroke={CHART.iDeCoFund} fill={CHART.iDeCoFund} fillOpacity={0.55} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Data table (condensed) */}
-          <div className="bg-slate-900 rounded-xl p-4 border border-slate-800 overflow-x-auto">
-            <h2 className="text-sm font-semibold text-slate-300 mb-3">年齢別推移テーブル</h2>
-            <table className="w-full text-xs text-slate-300 border-collapse min-w-[640px]">
+          {/* Table */}
+          <div
+            className="rounded-xl p-4 overflow-x-auto"
+            style={{ background: CARD, border: `1px solid ${BORDER}` }}
+          >
+            <h2 className="text-sm font-semibold mb-3" style={{ color: GOLD }}>
+              年齢別推移テーブル
+            </h2>
+            <table className="w-full text-xs border-collapse min-w-[640px]" style={{ color: SUB }}>
               <thead>
-                <tr className="text-slate-500 border-b border-slate-700">
-                  <th className="text-left py-1 pr-3">年齢</th>
-                  <th className="text-right pr-3">総資産</th>
-                  <th className="text-right pr-3">配当(税後)</th>
-                  <th className="text-right pr-3">年金等</th>
-                  <th className="text-right pr-3">生活費</th>
-                  <th className="text-right">収支</th>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  {['年齢', '総資産', '配当(税後)', '年金等', '生活費', '収支'].map(
+                    (h, i) => (
+                      <th
+                        key={h}
+                        className={`py-1.5 ${i === 0 ? 'text-left pr-3' : 'text-right pr-3'}`}
+                        style={{ color: GOLD, fontWeight: 600 }}
+                      >
+                        {h}
+                      </th>
+                    )
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {rows
-                  .filter((_, i) => i % 1 === 0)
-                  .map((r) => (
-                    <tr
-                      key={r.age}
-                      className={`border-b border-slate-800 ${
-                        r.isFIREYear ? 'bg-emerald-900/30' : ''
-                      }`}
+                {rows.map((r) => (
+                  <tr
+                    key={r.age}
+                    className="transition-colors"
+                    style={{
+                      borderBottom: `1px solid ${BORDER}`,
+                      background: r.isFIREYear ? `${GOLD}18` : undefined,
+                    }}
+                  >
+                    <td className="py-1 pr-3 font-mono text-white">
+                      {r.age}歳
+                      {r.isFIREYear && (
+                        <span className="ml-1 text-xs font-bold" style={{ color: GOLD }}>
+                          ★FIRE
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-right pr-3 font-mono text-white">{man(r.totalAssets)}</td>
+                    <td className="text-right pr-3 font-mono" style={{ color: GOLD }}>
+                      {man(r.dividendIncome)}
+                    </td>
+                    <td className="text-right pr-3 font-mono" style={{ color: CYAN }}>
+                      {man(r.pensionPublic + r.pensionBenefit + r.iDeCoIncome)}
+                    </td>
+                    <td className="text-right pr-3 font-mono text-white">{man(r.livingExpense)}</td>
+                    <td
+                      className="text-right font-mono"
+                      style={{ color: r.balance >= 0 ? GOLD : RED }}
                     >
-                      <td className="py-1 pr-3 font-mono">
-                        {r.age}歳
-                        {r.isFIREYear && (
-                          <span className="ml-1 text-emerald-400 font-bold">★FIRE</span>
-                        )}
-                      </td>
-                      <td className="text-right pr-3 font-mono">{man(r.totalAssets)}</td>
-                      <td className="text-right pr-3 font-mono">{man(r.dividendIncome)}</td>
-                      <td className="text-right pr-3 font-mono">
-                        {man(r.pensionPublic + r.pensionBenefit + r.iDeCoIncome)}
-                      </td>
-                      <td className="text-right pr-3 font-mono">{man(r.livingExpense)}</td>
-                      <td
-                        className={`text-right font-mono ${
-                          r.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                        }`}
-                      >
-                        {r.balance >= 0 ? '+' : ''}
-                        {man(r.balance)}
-                      </td>
-                    </tr>
-                  ))}
+                      {r.balance >= 0 ? '+' : ''}
+                      {man(r.balance)}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
