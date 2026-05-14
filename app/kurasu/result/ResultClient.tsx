@@ -36,7 +36,7 @@ const CHART = {
 
 // ── Formatters ────────────────────────────────
 const man = (v: number) => {
-  if (v >= 10_000) return `${Math.round(v / 10_000).toLocaleString()}万`;
+  if (Math.abs(v) >= 10_000) return `${Math.round(v / 10_000).toLocaleString()}万`;
   return `${Math.round(v).toLocaleString()}円`;
 };
 const manAxis = (v: number) => `${Math.round(v / 10_000).toLocaleString()}万`;
