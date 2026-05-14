@@ -339,7 +339,7 @@ export default function ResultClient() {
                       { label: '±',   align: 'right' },
                     ].map(({ label, align }) => (
                       <th key={label}
-                        className="py-1 px-1 font-semibold whitespace-nowrap"
+                        className="py-1 px-2 font-semibold whitespace-nowrap"
                         style={{ color: SUB, textAlign: align as React.CSSProperties['textAlign'] }}>
                         {label}
                       </th>
@@ -354,32 +354,32 @@ export default function ResultClient() {
                     return (
                       <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
                         {/* 1. 年（下2桁） */}
-                        <td className="py-1 px-1 whitespace-nowrap font-mono" style={{ color: SUB }}>
-                          {String(r.year).slice(-2)}
+                        <td className="py-1 px-2 whitespace-nowrap font-mono" style={{ color: SUB }}>
+                          {r.year}
                         </td>
                         {/* 2. 齢（数字のみ） */}
-                        <td className="py-1 px-1 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
+                        <td className="py-1 px-2 text-right font-mono whitespace-nowrap" style={{ color: NAVY }}>
                           {r.age}
                         </td>
                         {/* 3. 総資産 + ホバー内訳 */}
-                        <td className="py-1 px-1 text-right whitespace-nowrap">
+                        <td className="py-1 px-2 text-right whitespace-nowrap">
                           <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
                         </td>
                         {/* 4. 配当 */}
-                        <td className="py-1 px-1 text-right font-mono whitespace-nowrap"
+                        <td className="py-1 px-2 text-right font-mono whitespace-nowrap"
                           style={{ color: preRetirement ? SUB : NAVY }}>
                           {preRetirement ? '—' : tbl(r.dividendIncome)}
                         </td>
                         {/* 5. 年金 */}
-                        <td className="py-1 px-1 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                        <td className="py-1 px-2 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
                           {preRetirement ? '—' : tbl(otherIncome)}
                         </td>
                         {/* 6. 支出 */}
-                        <td className="py-1 px-1 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
+                        <td className="py-1 px-2 text-right font-mono whitespace-nowrap" style={{ color: SUB }}>
                           {tbl(r.livingExpense)}
                         </td>
                         {/* 7. ± */}
-                        <td className="py-1 px-1 text-right font-mono font-semibold whitespace-nowrap"
+                        <td className="py-1 px-2 text-right font-mono font-semibold whitespace-nowrap"
                           style={{ color: preRetirement ? SUB : r.balance >= 0 ? GREEN : RED }}>
                           {preRetirement ? '—' : tblSigned(r.balance)}
                         </td>
