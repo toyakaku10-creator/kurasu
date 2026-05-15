@@ -318,7 +318,7 @@ export default function ResultClient() {
           <div className="rounded-2xl overflow-hidden"
             style={{ background: BG, border: `1px solid ${BORDER}`, boxShadow: '0 1px 4px rgba(0,0,0,.07)' }}>
             <div className="px-5 pt-5 pb-3">
-              <h2 className="text-sm font-bold" style={{ color: NAVY }}>年間別推移<span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円）</span></h2>
+              <h2 className="text-sm font-bold" style={{ color: NAVY }}>年間別推移<span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円・1月1日時点、初年度は現在値）</span></h2>
             </div>
             {/* scroll container — both axes, sticky header works inside a single overflow:auto */}
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>

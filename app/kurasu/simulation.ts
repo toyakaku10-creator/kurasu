@@ -147,6 +147,13 @@ export function simulate(params: Params): YearRow[] {
   for (let age = params.currentAge; age <= 100; age++) {
     const year = params.currentYear + (age - params.currentAge);
 
+    // First year: push raw input values, no calculations
+    if (age === params.currentAge) {
+      const initTotal = params.stockAmount + params.goldAmount + params.cashAmount;
+      rows.push({ age, year, stocks: params.stockAmount, gold: params.goldAmount, cash: params.cashAmount, iDeCoFund: 0, totalAssets: initTotal, dividendIncome: 0, iDeCoIncome: 0, retirementIncome: 0, pensionPublic: 0, pensionBenefit: 0, totalIncome: 0, livingExpense: 0, balance: 0, isFIREYear: false, fireBadge: false, assetAppreciation: 0, dividendReinvest: 0, retirementReinvest: 0, iDeCoReinvest: 0, surplusReinvest: 0, cashDrawdown: 0, stockDrawdown: 0 });
+      continue;
+    }
+
     // Asset growth
     const stocksBefore = stocks;
     const goldBefore = gold;
@@ -207,8 +214,9 @@ export function simulate(params: Params): YearRow[] {
     let pensionPublic = 0;
     let pensionBenefit = 0;
     if (age >= params.pensionStartAge) {
-      const pGross = params.pensionMonthly * 12;
-      const bGross = params.pensionRetirementBenefitMonthly * 12;
+      const pensionRatio = age === params.pensionStartAge ? 3 / 12 : 1;
+      const pGross = params.pensionMonthly * 12 * pensionRatio;
+      const bGross = params.pensionRetirementBenefitMonthly * 12 * pensionRatio;
       const totalGross = pGross + bGross;
       const taxableExcess = Math.max(0, totalGross - 2_200_000);
       const totalTax = taxableExcess * 0.15;
