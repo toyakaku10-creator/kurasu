@@ -92,23 +92,6 @@ function CustomTooltip({ active, payload, label }: TipProps) {
   );
 }
 
-// ── Milestone card ────────────────────────────
-function MilestoneCard({ age, label, sub }: { age: number; label: string; sub: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl px-4 py-3"
-      style={{ background: BG, border: `1px solid ${BORDER}`, boxShadow: '0 1px 3px rgba(0,0,0,.06)' }}>
-      <div className="rounded-full w-12 h-12 flex-shrink-0 flex items-center justify-center text-sm font-bold"
-        style={{ background: GOLD, color: NAVY }}>
-        {age}
-      </div>
-      <div>
-        <div className="text-sm font-semibold" style={{ color: NAVY }}>{label}</div>
-        <div className="text-xs" style={{ color: SUB }}>{sub}</div>
-      </div>
-    </div>
-  );
-}
-
 // ── Total-assets breakdown cell ───────────────
 const TOOLTIP_W = 220;
 
@@ -223,16 +206,6 @@ export default function ResultClient() {
   const rows        = useMemo(() => simulate(params), [params]);
   const fireAge     = useMemo(() => getFireAge(rows), [rows]);
 
-  const milestones = useMemo(() => {
-    const ms: Array<{ age: number; label: string; sub: string }> = [
-      { age: params.retirementAge, label: '退職', sub: `退職金 ${man(params.retirementPayment)}` },
-      { age: params.iDeCoStartReceiveAge, label: 'iDeCo 一時金受取', sub: `加入${params.iDeCoYearsOfMembership}年・退職所得控除適用` },
-      { age: params.pensionStartAge, label: '年金 受取開始', sub: `月 ${man(params.pensionMonthly)}` },
-    ];
-    if (fireAge) ms.push({ age: fireAge, label: '自立達成', sub: '配当が生活費を超える' });
-    return ms.sort((a, b) => a.age - b.age);
-  }, [params, fireAge]);
-
   const incomeData = useMemo(() =>
     rows.map((r) => ({
       age: r.age,
@@ -285,18 +258,6 @@ export default function ResultClient() {
       {/* Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col gap-6">
-
-          {/* Milestones */}
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: SUB }}>
-              マイルストーン
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-              {milestones.map((m) => (
-                <MilestoneCard key={m.label} age={m.age} label={m.label} sub={m.sub} />
-              ))}
-            </div>
-          </div>
 
           {/* Income chart */}
           <ChartCard title="収入 vs 支出">
