@@ -410,7 +410,7 @@ export default function ResultClient() {
             {[
               { label: '配当自立年齢',   value: fireAge       ? `${fireAge}歳`              : '—',      note: '配当収入が生活費を超える年齢' },
               { label: '収支黒字化年齢', value: surplusAge    ? `${surplusAge}歳`            : '—',      note: '総収入が生活費を上回る年齢'   },
-              { label: '資産寿命',       value: assetLifetime ? `${assetLifetime}歳まで`     : '100歳超', note: assetBad ? '要確認' : '安心水準' },
+              { label: '資産寿命',       value: assetLifetime ? `${assetLifetime}歳まで`     : '99歳超', note: assetBad ? '要確認' : '安心水準' },
             ].map(({ label, value, note }) => (
               <div key={label}
                 className="flex flex-col gap-0.5 px-4 py-3 rounded-xl"

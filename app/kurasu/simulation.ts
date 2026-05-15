@@ -144,7 +144,7 @@ export function simulate(params: Params): YearRow[] {
 
   const retirementNet = retirementAfterTax(params.retirementPayment, params.yearsOfService);
 
-  for (let age = params.currentAge; age <= 100; age++) {
+  for (let age = params.currentAge; age <= 99; age++) {
     const year = params.currentYear + (age - params.currentAge);
 
     // First year: push raw input values, no calculations
