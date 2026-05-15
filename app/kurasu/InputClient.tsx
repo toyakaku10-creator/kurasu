@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  User, TrendingUp, Landmark, Home, Building2, LogOut, Coins, RefreshCw, ChevronRight, ChevronUp, ChevronDown,
+  User, TrendingUp, Landmark, Home, Building2, LogOut, Coins, RefreshCw, PlayCircle, ChevronUp, ChevronDown,
 } from 'lucide-react';
 import { DEFAULT_PARAMS } from './simulation';
 import type { Params } from './simulation';
@@ -297,17 +297,26 @@ export default function InputClient() {
         </div>
       </main>
 
-      {/* Fixed start button */}
+      {/* Fixed start button — 上半円デザイン */}
       <footer
-        className="fixed bottom-0 inset-x-0 px-4 py-4 flex justify-center"
-        style={{ background: 'rgba(255,255,255,0.95)', borderTop: `1px solid ${BORDER}`, backdropFilter: 'blur(8px)' }}
+        className="fixed bottom-0 inset-x-0 flex justify-center items-end pointer-events-none"
+        style={{ paddingBottom: 0 }}
       >
         <button
           onClick={handleStart}
-          className="w-full max-w-sm py-4 font-bold text-base tracking-wide transition-transform active:scale-95 hover:opacity-90 flex items-center justify-center gap-2"
-          style={{ background: GOLD, color: NAVY, borderRadius: 9999, boxShadow: `0 4px 24px ${GOLD}66` }}
+          className="pointer-events-auto flex flex-col items-center justify-center gap-1 font-bold tracking-wide transition-transform active:scale-95 hover:opacity-90"
+          style={{
+            background: GOLD,
+            color: NAVY,
+            width: 220,
+            height: 110,
+            borderRadius: '9999px 9999px 0 0',
+            boxShadow: `0 -4px 24px ${GOLD}66`,
+            fontSize: '0.85rem',
+          }}
         >
-          シミュレーション開始 <ChevronRight size={20} />
+          <PlayCircle size={28} />
+          シミュレーション開始
         </button>
       </footer>
     </div>
