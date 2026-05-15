@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
@@ -254,7 +254,7 @@ export default function ResultClient() {
           className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:bg-gray-50"
           style={{ color: NAVY, border: `1px solid ${BORDER}` }}
         >
-          <ArrowLeft size={15} /> 設定に戻る
+          <SlidersHorizontal size={15} /> 設定に戻る
         </button>
       </header>
 
