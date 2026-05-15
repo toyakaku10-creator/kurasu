@@ -131,6 +131,14 @@ export default function InputClient() {
 
   useEffect(() => { setParams(loadParams()); }, []);
 
+  useEffect(() => {
+    if (params.currentAge >= 60 && params.retirementAge !== 60) {
+      set('retirementAge', 60);
+    } else if (params.currentAge < 60 && params.retirementAge < params.currentAge) {
+      set('retirementAge', params.currentAge);
+    }
+  }, [params.currentAge, params.retirementAge, set]);
+
   const set = useCallback(
     <K extends keyof Params>(key: K, value: Params[K]) =>
       setParams((p) => ({ ...p, [key]: value })),
@@ -242,8 +250,17 @@ export default function InputClient() {
           </Sec>
 
           <Sec title="退職" icon="🎌">
-            <Slider label="退職年齢" value={params.retirementAge}
-              onChange={(v) => set('retirementAge', Math.max(60, v))} min={55} max={70} step={1} display={age} />
+            {params.currentAge >= 60 ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-xs font-medium" style={{ color: SUB }}>退職年齢</span>
+                  <span className="text-sm font-bold tabular-nums flex-shrink-0" style={{ color: GOLD }}>60歳（固定）</span>
+                </div>
+              </div>
+            ) : (
+              <Slider label="退職年齢" value={params.retirementAge}
+                onChange={(v) => set('retirementAge', v)} min={params.currentAge} max={60} step={1} display={age} />
+            )}
             <Slider label="勤続年数" value={params.yearsOfService}
               onChange={(v) => set('yearsOfService', v)} min={1} max={45} step={1} display={yr} />
             <Full>
