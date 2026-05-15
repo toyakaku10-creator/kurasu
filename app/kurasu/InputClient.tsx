@@ -42,7 +42,12 @@ const LS_KEY = 'kurasu-params-v1';
 function loadParams(): Params {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) return { ...DEFAULT_PARAMS, ...JSON.parse(raw) };
+    if (raw) {
+      const merged: Params = { ...DEFAULT_PARAMS, ...JSON.parse(raw) };
+      // Clamp retirementAge to valid range [currentAge, 60]
+      merged.retirementAge = Math.min(60, Math.max(merged.currentAge, merged.retirementAge));
+      return merged;
+    }
   } catch {}
   return DEFAULT_PARAMS;
 }
@@ -132,11 +137,8 @@ export default function InputClient() {
   useEffect(() => { setParams(loadParams()); }, []);
 
   useEffect(() => {
-    if (params.currentAge >= 60 && params.retirementAge !== 60) {
-      set('retirementAge', 60);
-    } else if (params.currentAge < 60 && params.retirementAge < params.currentAge) {
-      set('retirementAge', params.currentAge);
-    }
+    const clamped = Math.min(60, Math.max(params.currentAge, params.retirementAge));
+    if (clamped !== params.retirementAge) set('retirementAge', clamped);
   }, [params.currentAge, params.retirementAge, set]);
 
   const set = useCallback(
