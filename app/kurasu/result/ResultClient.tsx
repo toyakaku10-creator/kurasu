@@ -42,21 +42,11 @@ const man = (v: number) => {
   return `${Math.round(v).toLocaleString()}円`;
 };
 const manAxis = (v: number) => `${Math.round(v / 10_000).toLocaleString()}万`;
-// Table cell formatters — unit-free (万円 shown in header only)
-const tbl = (v: number) => {
-  if (v === 0) return '—';
-  const m = Math.round(v / 10_000);
-  return m === 0 ? '—' : m.toLocaleString();
-};
+// Table cell formatter — unit-free (万円 shown in header only)
 const tblAsset = (v: number) => {
   if (v === 0) return '—';
   const m = Math.round(v / 10_000);
   return m === 0 ? '—' : m.toLocaleString();
-};
-const tblSigned = (v: number) => {
-  const m = Math.round(v / 10_000);
-  if (m === 0) return '—';
-  return (v > 0 ? '+' : '') + m.toLocaleString();
 };
 
 // ── localStorage ──────────────────────────────
@@ -390,38 +380,34 @@ export default function ResultClient() {
           <div className="rounded-2xl overflow-hidden"
             style={{ background: BG, border: `1px solid ${BORDER}`, boxShadow: '0 1px 4px rgba(0,0,0,.07)' }}>
             <div className="px-5 pt-5 pb-3">
-              <h2 className="text-sm font-bold" style={{ color: NAVY }}>年間別推移<span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円・1月1日時点、初年度は現在値）</span></h2>
+              <h2 className="text-sm font-bold" style={{ color: NAVY }}>
+                年間別推移
+                <span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円・行をタップして実績を入力）</span>
+              </h2>
             </div>
-            {/* scroll container — both axes, sticky header works inside a single overflow:auto */}
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
-              <table className="border-collapse" style={{ minWidth: '580px', width: '100%', fontSize: '13px', tableLayout: 'fixed' }}>
+              <table className="border-collapse" style={{ minWidth: '360px', width: '100%', fontSize: '13px', tableLayout: 'fixed' }}>
                 <colgroup>
-                  <col style={{ width: '8%'  }} />  {/* 西暦       */}
-                  <col style={{ width: '5%'  }} />  {/* 齢         */}
-                  <col style={{ width: '11%' }} />  {/* 総資産(計) */}
-                  <col style={{ width: '11%' }} />  {/* 総資産(実) */}
-                  <col style={{ width: '9%'  }} />  {/* 配当(計)   */}
-                  <col style={{ width: '9%'  }} />  {/* 配当(実)   */}
-                  <col style={{ width: '9%'  }} />  {/* 年金       */}
-                  <col style={{ width: '9%'  }} />  {/* 支出(計)   */}
-                  <col style={{ width: '9%'  }} />  {/* 支出(実)   */}
-                  <col style={{ width: '10%' }} />  {/* 収支       */}
+                  <col style={{ width: '10%' }} />  {/* 西暦   */}
+                  <col style={{ width: '6%'  }} />  {/* 齢     */}
+                  <col style={{ width: '18%' }} />  {/* 総資産 */}
+                  <col style={{ width: '14%' }} />  {/* 配当   */}
+                  <col style={{ width: '13%' }} />  {/* 年金   */}
+                  <col style={{ width: '14%' }} />  {/* 支出   */}
+                  <col style={{ width: '13%' }} />  {/* 収支   */}
                 </colgroup>
                 <thead>
                   <tr style={{ position: 'sticky', top: 0, zIndex: 1, background: CARD, boxShadow: `0 1px 0 ${BORDER}` }}>
                     {([
-                      { label: '西暦',    align: 'left',  pl: '4px', pr: '2px', bold: false, divider: false },
-                      { label: '齢',      align: 'right', pl: '2px', pr: '4px', bold: false, divider: true  },
-                      { label: '総資産↓', align: 'right', pl: '4px', pr: '2px', bold: true,  divider: false },
-                      { label: '実績',    align: 'right', pl: '2px', pr: '4px', bold: true,  divider: false },
-                      { label: '配当↓',  align: 'right', pl: '4px', pr: '2px', bold: true,  divider: false },
-                      { label: '実績',    align: 'right', pl: '2px', pr: '4px', bold: true,  divider: false },
-                      { label: '年金',    align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
-                      { label: '支出↓',  align: 'right', pl: '4px', pr: '2px', bold: true,  divider: false },
-                      { label: '実績',    align: 'right', pl: '2px', pr: '4px', bold: true,  divider: false },
-                      { label: '収支',    align: 'right', pl: '4px', pr: '14px', bold: true, divider: false },
+                      { label: '西暦',    align: 'left',  pl: '10px', pr: '2px',  bold: false, divider: false },
+                      { label: '齢',      align: 'right', pl: '2px',  pr: '4px',  bold: false, divider: true  },
+                      { label: '総資産↓', align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
+                      { label: '配当↓',  align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
+                      { label: '年金',    align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
+                      { label: '支出↓',  align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
+                      { label: '収支',    align: 'right', pl: '4px',  pr: '14px', bold: true,  divider: false },
                     ] as const).map(({ label, align, pl, pr, bold, divider }) => (
-                      <th key={label + pl}
+                      <th key={label}
                         className={`py-1 whitespace-nowrap ${bold ? 'font-semibold' : 'font-normal'}`}
                         style={{ color: SUB, textAlign: align, paddingLeft: pl, paddingRight: pr,
                           borderRight: divider ? `1px solid ${BORDER}` : undefined, fontSize: '0.7rem' }}>
@@ -435,24 +421,30 @@ export default function ResultClient() {
                     const preRetirement = r.age < params.retirementAge;
                     const pensionIncome = r.pensionPublic + r.pensionBenefit;
                     const yoyDiff = i > 0 ? r.totalAssets - rows[i - 1].totalAssets : null;
-                    const mDiv     = Math.round(r.dividendIncome / 10_000);
-                    const mPension = Math.round(pensionIncome    / 10_000);
-                    const mExp     = Math.round(r.livingExpense  / 10_000);
-                    const mBal     = mDiv + mPension - mExp;
-                    const act      = actuals[String(r.year)];
+                    const act = actuals[String(r.year)];
                     const hasActual = !!act;
-                    const rowBg = hasActual ? `${GOLD}18` : undefined;
 
-                    // diff helpers (actual - plan, in 万: positive=actual > plan)
-                    const diffColor = (diff: number, higherBetter: boolean) =>
-                      diff === 0 ? SUB : (diff > 0) === higherBetter ? GREEN : RED;
+                    // Use actual values when available, fall back to plan (all in 万円)
+                    const dispDivM   = act?.dividend  != null ? act.dividend  : Math.round(r.dividendIncome / 10_000);
+                    const dispExpM   = act?.expense   != null ? act.expense   : Math.round(r.livingExpense  / 10_000);
+                    const dispPenM   = Math.round(pensionIncome / 10_000);
+                    // balance: use actual values if any actual entered, else plan
+                    const balSrc = hasActual ? dispDivM + dispPenM - dispExpM
+                      : Math.round(r.dividendIncome / 10_000) + dispPenM - Math.round(r.livingExpense / 10_000);
+                    const showPre = preRetirement && !hasActual;
 
                     return (
                       <tr key={r.age}
                         onClick={() => setModalYear(r.year)}
-                        style={{ borderBottom: `1px solid ${BORDER}`, background: rowBg, cursor: 'pointer' }}>
-                        {/* 1. 西暦 */}
-                        <td className="py-1 font-normal tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '2px' }}>
+                        style={{ borderBottom: `1px solid ${BORDER}`, background: hasActual ? `${GOLD}18` : undefined, cursor: 'pointer' }}>
+                        {/* 1. 西暦 — gold left-border when actual exists */}
+                        <td className="py-1 font-normal tabular-nums"
+                          style={{
+                            color: SUB,
+                            paddingLeft: hasActual ? '7px' : '10px',
+                            paddingRight: '2px',
+                            borderLeft: hasActual ? `3px solid ${GOLD}` : '3px solid transparent',
+                          }}>
                           {r.year}
                         </td>
                         {/* 2. 齢 */}
@@ -460,52 +452,36 @@ export default function ResultClient() {
                           style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}` }}>
                           {r.age}
                         </td>
-                        {/* 3. 総資産(計) */}
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '2px' }}
+                        {/* 3. 総資産 */}
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px' }}
                           onClick={e => e.stopPropagation()}>
-                          <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
+                          {hasActual && act?.totalAsset != null ? (
+                            <span style={{ color: GOLD, fontWeight: 600 }}>{act.totalAsset.toLocaleString()}</span>
+                          ) : (
+                            <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
+                          )}
                         </td>
-                        {/* 4. 総資産(実) */}
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '2px', paddingRight: '4px' }}>
-                          {act?.totalAsset != null ? (
-                            <span style={{ color: diffColor(act.totalAsset - Math.round(r.totalAssets / 10_000), true) }}>
-                              {act.totalAsset.toLocaleString()}
-                            </span>
-                          ) : <span style={{ color: SUB }}>—</span>}
+                        {/* 4. 配当 */}
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px',
+                          color: hasActual && act?.dividend != null ? GOLD : showPre ? SUB : NAVY,
+                          fontWeight: hasActual && act?.dividend != null ? 600 : undefined }}>
+                          {showPre ? '—' : dispDivM === 0 ? '—' : dispDivM.toLocaleString()}
                         </td>
-                        {/* 5. 配当(計) */}
-                        <td className="py-1 text-right tabular-nums"
-                          style={{ color: preRetirement ? SUB : NAVY, paddingLeft: '4px', paddingRight: '2px' }}>
-                          {preRetirement ? '—' : tbl(r.dividendIncome)}
-                        </td>
-                        {/* 6. 配当(実) */}
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '2px', paddingRight: '4px' }}>
-                          {act?.dividend != null ? (
-                            <span style={{ color: diffColor(act.dividend - Math.round(r.dividendIncome / 10_000), true) }}>
-                              {act.dividend.toLocaleString()}
-                            </span>
-                          ) : <span style={{ color: SUB }}>—</span>}
-                        </td>
-                        {/* 7. 年金 */}
+                        {/* 5. 年金 */}
                         <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
-                          {tbl(pensionIncome)}
+                          {dispPenM === 0 ? '—' : dispPenM.toLocaleString()}
                         </td>
-                        {/* 8. 支出(計) */}
-                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '2px' }}>
-                          {tbl(r.livingExpense)}
+                        {/* 6. 支出 */}
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px',
+                          color: hasActual && act?.expense != null ? GOLD : SUB,
+                          fontWeight: hasActual && act?.expense != null ? 600 : undefined }}>
+                          {dispExpM === 0 ? '—' : dispExpM.toLocaleString()}
                         </td>
-                        {/* 9. 支出(実) */}
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '2px', paddingRight: '4px' }}>
-                          {act?.expense != null ? (
-                            <span style={{ color: diffColor(act.expense - Math.round(r.livingExpense / 10_000), false) }}>
-                              {act.expense.toLocaleString()}
-                            </span>
-                          ) : <span style={{ color: SUB }}>—</span>}
-                        </td>
-                        {/* 10. 収支 */}
+                        {/* 7. 収支 */}
                         <td className="py-1 text-right tabular-nums font-semibold"
-                          style={{ color: preRetirement ? SUB : mBal >= 0 ? GREEN : RED, paddingLeft: '4px', paddingRight: '14px' }}>
-                          {preRetirement ? '—' : mBal === 0 ? '—' : (mBal > 0 ? '+' : '') + mBal.toLocaleString()}
+                          style={{ paddingLeft: '4px', paddingRight: '14px',
+                            color: showPre ? SUB : balSrc >= 0 ? GREEN : RED }}>
+                          {showPre ? '—' : balSrc === 0 ? '—' : (balSrc > 0 ? '+' : '') + balSrc.toLocaleString()}
                         </td>
                       </tr>
                     );
