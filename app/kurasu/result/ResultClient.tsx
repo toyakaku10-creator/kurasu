@@ -109,7 +109,7 @@ const TOOLTIP_W = 220;
 
 function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null }) {
   const [show, setShow] = useState(false);
-  const [tipPos, setTipPos] = useState({ top: 0, left: 0 });
+  const [tipPos, setTipPos] = useState({ top: 0, left: 0, above: true });
   const triggerRef = useRef<HTMLDivElement>(null);
 
   const items: Array<{ label: string; value: number }> = [];
@@ -125,13 +125,15 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const vw = window.innerWidth;
-    // top: place above trigger (translateY(-100%) handles height)
-    const top = rect.top - 6;
-    // left: right-align to trigger, clamp to viewport
+    const vh = window.innerHeight;
+    // Decide above/below based on available space (estimate tooltip height ~180px)
+    const above = rect.top > 200 || rect.top > vh - rect.bottom;
+    const top = above ? rect.top - 6 : rect.bottom + 6;
+    // Horizontal: right-align to trigger, clamp to viewport edges
     let left = rect.right - TOOLTIP_W;
     if (left < 8) left = 8;
     if (left + TOOLTIP_W > vw - 8) left = vw - TOOLTIP_W - 8;
-    setTipPos({ top, left });
+    setTipPos({ top, left, above });
     setShow(true);
   };
 
@@ -151,7 +153,7 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
           position: 'fixed',
           top: tipPos.top,
           left: tipPos.left,
-          transform: 'translateY(-100%)',
+          transform: tipPos.above ? 'translateY(-100%)' : 'none',
           width: TOOLTIP_W,
           background: BG,
           border: `1px solid ${BORDER}`,
