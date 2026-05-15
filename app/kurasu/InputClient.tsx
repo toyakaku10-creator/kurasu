@@ -202,9 +202,10 @@ export default function InputClient() {
             <Slider label="配当率" value={params.stockDividendRate}
               onChange={(v) => set('stockDividendRate', v)} min={0} max={0.10} step={0.001} display={pct} />
             <Full>
-              <Slider label="NISA比率" value={params.stockNisaRatio}
-                onChange={(v) => set('stockNisaRatio', v)} min={0} max={1} step={0.01}
-                display={(v) => `${Math.round(v * 100)}%`} />
+              <Slider label="現在のNISA保有額" value={params.nisaCurrentAmount}
+                onChange={(v) => set('nisaCurrentAmount', v)} min={0} max={12_000_000} step={240_000}
+                display={yen} />
+              <p className="text-xs mt-1" style={{ color: SUB }}>2024年スタート・年240万ずつ増加・上限1,200万</p>
             </Full>
           </Sec>
 

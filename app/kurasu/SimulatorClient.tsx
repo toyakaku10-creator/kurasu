@@ -414,7 +414,7 @@ export default function SimulatorClient() {
               <NumInput label="株式 保有額" value={params.stockAmount} onChange={(v) => set('stockAmount', v)} step={100_000} unit="円" />
               <NumInput label="株式 成長率" value={params.stockGrowthRate * 100} onChange={(v) => set('stockGrowthRate', v / 100)} min={0} max={30} step={0.1} unit="%" />
               <NumInput label="配当率" value={params.stockDividendRate * 100} onChange={(v) => set('stockDividendRate', v / 100)} min={0} max={20} step={0.1} unit="%" />
-              <NumInput label="NISA比率" value={params.stockNisaRatio * 100} onChange={(v) => set('stockNisaRatio', v / 100)} min={0} max={100} step={1} unit="%" />
+              <NumInput label="NISA保有額" value={params.nisaCurrentAmount} onChange={(v) => set('nisaCurrentAmount', v)} step={240_000} min={0} max={12_000_000} unit="円" />
               <NumInput label="金 保有額" value={params.goldAmount} onChange={(v) => set('goldAmount', v)} step={100_000} unit="円" />
               <NumInput label="金 成長率" value={params.goldGrowthRate * 100} onChange={(v) => set('goldGrowthRate', v / 100)} min={0} max={20} step={0.1} unit="%" />
               <NumInput label="現金・預金" value={params.cashAmount} onChange={(v) => set('cashAmount', v)} step={100_000} unit="円" />

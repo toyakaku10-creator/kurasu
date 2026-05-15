@@ -5,7 +5,7 @@ export interface Params {
   stockAmount: number;
   stockGrowthRate: number;
   stockDividendRate: number;
-  stockNisaRatio: number;
+  nisaCurrentAmount: number; // 現在のNISA保有額（円）・毎年240万増・上限1200万
   // Gold
   goldAmount: number;
   goldGrowthRate: number;
@@ -70,7 +70,7 @@ export const DEFAULT_PARAMS: Params = {
   stockAmount: 15_000_000,
   stockGrowthRate: 0.06,
   stockDividendRate: 0.038,
-  stockNisaRatio: 0.4,
+  nisaCurrentAmount: 4_800_000, // 480万（2年分）
   goldAmount: 3_000_000,
   goldGrowthRate: 0.04,
   cashAmount: 8_000_000,
@@ -168,16 +168,22 @@ export function simulate(params: Params): YearRow[] {
       : 0;
     iDeCoFund = iDeCoFund * (1 + params.iDeCoReturn) + annualContrib;
 
-    // Dividend (after tax, NISA-adjusted)
-    const dividendGross = stocks * params.stockDividendRate;
-    const dividendAfterTax =
-      dividendGross *
-      (params.stockNisaRatio + (1 - params.stockNisaRatio) * (1 - 0.20315));
-
     // Living expense
     const yearsFromNow = age - params.currentAge;
     let livingExpense =
       params.annualLivingExpense * Math.pow(1 + params.inflationRate, yearsFromNow);
+
+    // Dividend (after tax, NISA-adjusted)
+    // NISA cumulative: 現在値 + 経過年数×240万、上限1200万
+    const nisaCumulative = Math.min(
+      params.nisaCurrentAmount + yearsFromNow * 2_400_000,
+      12_000_000,
+    );
+    const nisaRatio = stocks > 0 ? Math.min(1, nisaCumulative / stocks) : 0;
+    const dividendGross = stocks * params.stockDividendRate;
+    const dividendAfterTax =
+      dividendGross * (nisaRatio + (1 - nisaRatio) * (1 - 0.20315));
+
     if (params.livingExpenseDecline && age >= params.livingExpenseDeclineAge) {
       livingExpense *= 1 - params.livingExpenseDeclineRate;
     }
