@@ -308,8 +308,8 @@ export default function InputClient() {
           style={{
             background: GOLD,
             color: NAVY,
-            width: 160,
-            height: 72,
+            width: 200,
+            height: 100,
             borderRadius: '9999px 9999px 0 0',
             boxShadow: `0 -4px 20px ${GOLD}55`,
             fontSize: '0.75rem',
