@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
@@ -248,10 +249,10 @@ export default function ResultClient() {
         </div>
         <button
           onClick={() => router.push('/kurasu')}
-          className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:bg-gray-50"
+          className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:bg-gray-50"
           style={{ color: NAVY, border: `1px solid ${BORDER}` }}
         >
-          ← 設定に戻る
+          <ArrowLeft size={15} /> 設定に戻る
         </button>
       </header>
 
@@ -399,7 +400,7 @@ export default function ResultClient() {
               className="flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-xl transition-colors hover:bg-gray-100"
               style={{ color: NAVY, border: `1px solid ${BORDER}`, background: BG }}
             >
-              ← 設定に戻る
+              設定に戻る
             </button>
           </div>
 

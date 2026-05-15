@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  User, TrendingUp, Landmark, Home, Building2, LogOut, Coins, RefreshCw, ArrowRight, ChevronUp, ChevronDown,
+} from 'lucide-react';
 import { DEFAULT_PARAMS } from './simulation';
 import type { Params } from './simulation';
 
@@ -100,7 +103,7 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
 
 // ── Section ───────────────────────────────────
 function Sec({ title, icon, children, defaultOpen = true }: {
-  title: string; icon: string; children: React.ReactNode; defaultOpen?: boolean;
+  title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -111,10 +114,10 @@ function Sec({ title, icon, children, defaultOpen = true }: {
         style={{ background: CARD, color: NAVY, borderBottom: open ? `1px solid ${BORDER}` : 'none' }}
       >
         <span className="flex items-center gap-2">
-          <span>{icon}</span>
+          <span style={{ color: GOLD }}>{icon}</span>
           <span>{title}</span>
         </span>
-        <span className="text-xs font-normal" style={{ color: GOLD }}>{open ? '▲' : '▼'}</span>
+        {open ? <ChevronUp size={14} color={GOLD} /> : <ChevronDown size={14} color={GOLD} />}
       </button>
       {open && (
         <div className="px-5 py-5 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6" style={{ background: BG }}>
@@ -181,7 +184,7 @@ export default function InputClient() {
       <main className="flex-1 overflow-y-auto pb-28">
         <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-4">
 
-          <Sec title="基本情報" icon="👤">
+          <Sec title="基本情報" icon={<User size={15} />}>
             <Slider label="現在年齢" value={params.currentAge}
               onChange={(v) => set('currentAge', v)} min={20} max={80} step={1} display={age} />
             <Slider label="現在年（西暦）" value={params.currentYear}
@@ -189,7 +192,7 @@ export default function InputClient() {
               display={(v) => `${v}年`} />
           </Sec>
 
-          <Sec title="株式" icon="📈">
+          <Sec title="株式" icon={<TrendingUp size={15} />}>
             <Full>
               <Slider label="保有額" value={params.stockAmount}
                 onChange={(v) => set('stockAmount', v)} min={0} max={50_000_000} step={500_000} display={yen} />
@@ -205,7 +208,7 @@ export default function InputClient() {
             </Full>
           </Sec>
 
-          <Sec title="その他資産" icon="🏅" defaultOpen={false}>
+          <Sec title="その他資産" icon={<Coins size={15} />} defaultOpen={false}>
             <Slider label="金 保有額" value={params.goldAmount}
               onChange={(v) => set('goldAmount', v)} min={0} max={20_000_000} step={100_000} display={yen} />
             <Slider label="金 成長率" value={params.goldGrowthRate}
@@ -214,7 +217,7 @@ export default function InputClient() {
               onChange={(v) => set('cashAmount', v)} min={0} max={20_000_000} step={100_000} display={yen} />
           </Sec>
 
-          <Sec title="生活費" icon="🏠">
+          <Sec title="生活費" icon={<Home size={15} />}>
             <Full>
               <Slider label="年間生活費" value={params.annualLivingExpense}
                 onChange={(v) => set('annualLivingExpense', v)} min={1_200_000} max={10_000_000} step={100_000} display={yen} />
@@ -236,7 +239,7 @@ export default function InputClient() {
             )}
           </Sec>
 
-          <Sec title="iDeCo" icon="🏦" defaultOpen={false}>
+          <Sec title="iDeCo" icon={<Building2 size={15} />} defaultOpen={false}>
             <Slider label="月額掛金（〜2026年）" value={params.iDeCoMonthly}
               onChange={(v) => set('iDeCoMonthly', v)} min={0} max={68_000} step={1_000} display={yenM} />
             <Slider label="月額掛金（2027年以降）" value={params.iDeCoMonthly2027}
@@ -251,7 +254,7 @@ export default function InputClient() {
               onChange={(v) => set('iDeCoYearsOfMembership', v)} min={1} max={40} step={1} display={yr} />
           </Sec>
 
-          <Sec title="退職" icon="🎌">
+          <Sec title="退職" icon={<LogOut size={15} />}>
             {params.currentAge >= 60 ? (
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-baseline gap-2">
@@ -271,7 +274,7 @@ export default function InputClient() {
             </Full>
           </Sec>
 
-          <Sec title="年金" icon="🪙" defaultOpen={false}>
+          <Sec title="年金" icon={<Landmark size={15} />} defaultOpen={false}>
             <Slider label="厚生+基礎年金（月額）" value={params.pensionMonthly}
               onChange={(v) => set('pensionMonthly', v)} min={0} max={300_000} step={5_000} display={yenM} />
             <Slider label="受取開始年齢" value={params.pensionStartAge}
@@ -282,7 +285,7 @@ export default function InputClient() {
             </Full>
           </Sec>
 
-          <Sec title="再投資オプション" icon="♻️" defaultOpen={false}>
+          <Sec title="再投資オプション" icon={<RefreshCw size={15} />} defaultOpen={false}>
             <Full>
               <Toggle label="退職金・iDeCoを株式に再投資（配当自立を加速）"
                 value={params.reinvestRetirement}
@@ -300,10 +303,10 @@ export default function InputClient() {
       >
         <button
           onClick={handleStart}
-          className="w-full max-w-2xl py-4 rounded-2xl font-bold text-base tracking-wide transition-transform active:scale-95 hover:opacity-90"
+          className="w-full max-w-2xl py-4 rounded-2xl font-bold text-base tracking-wide transition-transform active:scale-95 hover:opacity-90 flex items-center justify-center gap-2"
           style={{ background: GOLD, color: NAVY, boxShadow: `0 4px 20px ${GOLD}55` }}
         >
-          シミュレーション開始 →
+          シミュレーション開始 <ArrowRight size={18} />
         </button>
       </footer>
     </div>
