@@ -7,7 +7,7 @@ import {
   Tooltip, Legend, ResponsiveContainer, AreaChart, Area, ReferenceLine,
 } from 'recharts';
 import {
-  simulate, DEFAULT_PARAMS, getFireAge, getSurplusAge, getAssetLifetime,
+  simulate, DEFAULT_PARAMS, getFireAge,
 } from '../simulation';
 import type { Params, YearRow } from '../simulation';
 
@@ -217,8 +217,6 @@ export default function ResultClient() {
 
   const rows        = useMemo(() => simulate(params), [params]);
   const fireAge     = useMemo(() => getFireAge(rows), [rows]);
-  const surplusAge  = useMemo(() => getSurplusAge(rows), [rows]);
-  const assetLifetime = useMemo(() => getAssetLifetime(rows), [rows]);
 
   const milestones = useMemo(() => {
     const ms: Array<{ age: number; label: string; sub: string }> = [
@@ -259,7 +257,6 @@ export default function ResultClient() {
       label={{ value: lbl, fill: color, fontSize: 10, position: 'top' as const }} />
   );
 
-  const assetBad = assetLifetime !== null && assetLifetime < 90;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#F1F5F9', color: NAVY }}>
@@ -425,23 +422,6 @@ export default function ResultClient() {
                 </tbody>
               </table>
             </div>
-          </div>
-
-          {/* Summary stats — subtle, bottom */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { label: '配当自立年齢',   value: fireAge       ? `${fireAge}歳`              : '—',      note: '配当収入が生活費を超える年齢' },
-              { label: '収支黒字化年齢', value: surplusAge    ? `${surplusAge}歳`            : '—',      note: '総収入が生活費を上回る年齢'   },
-              { label: '資産寿命',       value: assetLifetime ? `${assetLifetime}歳まで`     : '99歳超', note: assetBad ? '要確認' : '安心水準' },
-            ].map(({ label, value, note }) => (
-              <div key={label}
-                className="flex flex-col gap-0.5 px-4 py-3 rounded-xl"
-                style={{ border: `1px solid ${BORDER}`, background: BG }}>
-                <span className="text-xs" style={{ color: SUB }}>{label}</span>
-                <span className="text-lg font-semibold tabular-nums" style={{ color: NAVY }}>{value}</span>
-                <span className="text-xs" style={{ color: '#9ca3af' }}>{note}</span>
-              </div>
-            ))}
           </div>
 
           {/* Bottom back button */}
