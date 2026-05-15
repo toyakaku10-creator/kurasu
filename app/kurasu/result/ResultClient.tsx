@@ -360,6 +360,11 @@ export default function ResultClient() {
                     const preRetirement = r.age < params.retirementAge;
                     const otherIncome = (params.reinvestRetirement ? 0 : r.retirementIncome + r.iDeCoIncome) + r.pensionPublic + r.pensionBenefit;
                     const yoyDiff = i > 0 ? r.totalAssets - rows[i - 1].totalAssets : null;
+                    // 収支 = 表示値（万円丸め後）の和差で計算してズレをなくす
+                    const mDiv   = Math.round(r.dividendIncome / 10_000);
+                    const mOther = Math.round(otherIncome      / 10_000);
+                    const mExp   = Math.round(r.livingExpense  / 10_000);
+                    const mBal   = mDiv + mOther - mExp;
                     return (
                       <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
                         {/* 1. 西暦 */}
@@ -387,10 +392,10 @@ export default function ResultClient() {
                         <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '1px' }}>
                           {tbl(r.livingExpense)}
                         </td>
-                        {/* 7. 収支 */}
+                        {/* 7. 収支（表示値ベースで計算） */}
                         <td className="py-1 text-right tabular-nums font-semibold"
-                          style={{ color: preRetirement ? SUB : r.balance >= 0 ? GREEN : RED, paddingLeft: '1px', paddingRight: '14px' }}>
-                          {preRetirement ? '—' : tblSigned(r.balance)}
+                          style={{ color: preRetirement ? SUB : mBal >= 0 ? GREEN : RED, paddingLeft: '1px', paddingRight: '14px' }}>
+                          {preRetirement ? '—' : mBal === 0 ? '—' : (mBal > 0 ? '+' : '') + mBal.toLocaleString()}
                         </td>
                       </tr>
                     );
