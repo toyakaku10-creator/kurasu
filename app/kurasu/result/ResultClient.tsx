@@ -47,6 +47,15 @@ const tbl = (v: number) => {
   const m = Math.round(v / 10_000);
   return m === 0 ? '—' : m.toLocaleString();
 };
+const tblAsset = (v: number) => {
+  if (v === 0) return '—';
+  const m = Math.round(v / 10_000);
+  if (m === 0) return '—';
+  if (m < 10_000) return m.toLocaleString();
+  const oku = Math.floor(m / 10_000);
+  const rem = m % 10_000;
+  return rem === 0 ? `${oku.toLocaleString()}億` : `${oku.toLocaleString()}億${rem.toLocaleString()}万`;
+};
 const tblSigned = (v: number) => {
   const m = Math.round(v / 10_000);
   if (m === 0) return '—';
@@ -146,7 +155,7 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
       onTouchStart={(e) => { e.stopPropagation(); show ? setShow(false) : openTooltip(); }}
     >
       <div style={{ cursor: 'default', borderBottom: `1px dashed ${BORDER}`, paddingBottom: 1, color: NAVY }}>
-        {tbl(r.totalAssets)}
+        {tblAsset(r.totalAssets)}
       </div>
       {show && (
         <div style={{
@@ -343,13 +352,13 @@ export default function ResultClient() {
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
               <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '14px', tableLayout: 'fixed' }}>
                 <colgroup>
-                  <col style={{ width: '14%' }} />  {/* 西暦   4桁 */}
-                  <col style={{ width:  '9%' }} />  {/* 齢     3桁 */}
-                  <col style={{ width: '18%' }} />  {/* 総資産 9桁 */}
-                  <col style={{ width: '15%' }} />  {/* 配当   7桁 */}
-                  <col style={{ width: '12%' }} />  {/* 年金   6桁 */}
-                  <col style={{ width: '12%' }} />  {/* 支出   6桁 */}
-                  <col style={{ width: '20%' }} />  {/* 収支   8桁 */}
+                  <col style={{ width: '13%' }} />  {/* 西暦   4桁 */}
+                  <col style={{ width:  '8%' }} />  {/* 齢     2桁 */}
+                  <col style={{ width: '22%' }} />  {/* 総資産 最大9桁（億表示） */}
+                  <col style={{ width: '14%' }} />  {/* 配当   7桁 */}
+                  <col style={{ width: '11%' }} />  {/* 年金   6桁 */}
+                  <col style={{ width: '11%' }} />  {/* 支出   6桁 */}
+                  <col style={{ width: '21%' }} />  {/* 収支   8桁 */}
                 </colgroup>
                 <thead>
                   <tr style={{
@@ -358,17 +367,18 @@ export default function ResultClient() {
                     boxShadow: `0 1px 0 ${BORDER}`,
                   }}>
                     {([
-                      { label: '西暦',   align: 'left',  pl: '4px', pr: '8px', bold: false },
-                      { label: '齢',     align: 'right', pl: '2px', pr: '4px', bold: false },
-                      { label: '総資産', align: 'right', pl: '1px', pr: '4px', bold: true  },
-                      { label: '配当',   align: 'right', pl: '4px', pr: '4px', bold: true  },
-                      { label: '年金',   align: 'right', pl: '4px', pr: '4px', bold: true  },
-                      { label: '支出',   align: 'right', pl: '4px', pr: '1px', bold: true  },
-                      { label: '収支',   align: 'right', pl: '1px', pr: '14px', bold: true  },
-                    ] as const).map(({ label, align, pl, pr, bold }) => (
+                      { label: '西暦',   align: 'left',  pl: '4px', pr: '4px', bold: false, divider: false },
+                      { label: '齢',     align: 'right', pl: '2px', pr: '4px', bold: false, divider: true  },
+                      { label: '総資産', align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
+                      { label: '配当',   align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
+                      { label: '年金',   align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
+                      { label: '支出',   align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
+                      { label: '収支',   align: 'right', pl: '4px', pr: '14px', bold: true, divider: false },
+                    ] as const).map(({ label, align, pl, pr, bold, divider }) => (
                       <th key={label}
                         className={`py-1 whitespace-nowrap ${bold ? 'font-semibold' : 'font-normal'}`}
-                        style={{ color: SUB, textAlign: align, paddingLeft: pl, paddingRight: pr }}>
+                        style={{ color: SUB, textAlign: align, paddingLeft: pl, paddingRight: pr,
+                          borderRight: divider ? `1px solid ${BORDER}` : undefined }}>
                         {label}
                       </th>
                     ))}
@@ -387,33 +397,34 @@ export default function ResultClient() {
                     return (
                       <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
                         {/* 1. 西暦 */}
-                        <td className="py-1 font-normal tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '8px' }}>
+                        <td className="py-1 font-normal tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
                           {r.year}
                         </td>
                         {/* 2. 齢 */}
-                        <td className="py-1 text-right font-normal tabular-nums" style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px' }}>
+                        <td className="py-1 text-right font-normal tabular-nums"
+                          style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}` }}>
                           {r.age}
                         </td>
-                        {/* 3. 総資産 + ホバー内訳 */}
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '1px', paddingRight: '4px' }}>
+                        {/* 3. 総資産 + ホバー内訳（億表示対応） */}
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px' }}>
                           <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
                         </td>
                         {/* 4. 配当 */}
-                        <td className="py-1 px-1 text-right tabular-nums"
-                          style={{ color: preRetirement ? SUB : NAVY }}>
+                        <td className="py-1 text-right tabular-nums"
+                          style={{ color: preRetirement ? SUB : NAVY, paddingLeft: '4px', paddingRight: '4px' }}>
                           {preRetirement ? '—' : tbl(r.dividendIncome)}
                         </td>
                         {/* 5. 年金 */}
-                        <td className="py-1 px-1 text-right tabular-nums" style={{ color: SUB }}>
+                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
                           {preRetirement ? '—' : tbl(otherIncome)}
                         </td>
                         {/* 6. 支出 */}
-                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '1px' }}>
+                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
                           {tbl(r.livingExpense)}
                         </td>
                         {/* 7. 収支（表示値ベースで計算） */}
                         <td className="py-1 text-right tabular-nums font-semibold"
-                          style={{ color: preRetirement ? SUB : mBal >= 0 ? GREEN : RED, paddingLeft: '1px', paddingRight: '14px' }}>
+                          style={{ color: preRetirement ? SUB : mBal >= 0 ? GREEN : RED, paddingLeft: '4px', paddingRight: '14px' }}>
                           {preRetirement ? '—' : mBal === 0 ? '—' : (mBal > 0 ? '+' : '') + mBal.toLocaleString()}
                         </td>
                       </tr>
