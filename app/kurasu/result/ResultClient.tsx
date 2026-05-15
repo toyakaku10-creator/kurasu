@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
@@ -105,8 +105,12 @@ function MilestoneCard({ age, label, sub }: { age: number; label: string; sub: s
 }
 
 // ── Total-assets breakdown cell ───────────────
+const TOOLTIP_W = 220;
+
 function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null }) {
   const [show, setShow] = useState(false);
+  const [tipPos, setTipPos] = useState({ top: 0, left: 0 });
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   const items: Array<{ label: string; value: number }> = [];
   if (r.assetAppreciation > 0)  items.push({ label: '株式・金評価増',  value:  r.assetAppreciation });
@@ -117,28 +121,44 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
   if (r.cashDrawdown > 0)       items.push({ label: '生活費補填',        value: -r.cashDrawdown });
   if (r.stockDrawdown > 0)      items.push({ label: '取り崩し',          value: -r.stockDrawdown });
 
+  const openTooltip = () => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const vw = window.innerWidth;
+    // top: place above trigger (translateY(-100%) handles height)
+    const top = rect.top - 6;
+    // left: right-align to trigger, clamp to viewport
+    let left = rect.right - TOOLTIP_W;
+    if (left < 8) left = 8;
+    if (left + TOOLTIP_W > vw - 8) left = vw - TOOLTIP_W - 8;
+    setTipPos({ top, left });
+    setShow(true);
+  };
+
   return (
     <div
+      ref={triggerRef}
       style={{ position: 'relative', display: 'inline-block' }}
-      onMouseEnter={() => setShow(true)}
+      onMouseEnter={openTooltip}
       onMouseLeave={() => setShow(false)}
+      onTouchStart={(e) => { e.stopPropagation(); show ? setShow(false) : openTooltip(); }}
     >
       <div style={{ cursor: 'default', borderBottom: `1px dashed ${BORDER}`, paddingBottom: 1, color: NAVY }}>
         {tbl(r.totalAssets)}
       </div>
       {show && (
         <div style={{
-          position: 'absolute',
-          bottom: 'calc(100% + 6px)',
-          right: 0,
+          position: 'fixed',
+          top: tipPos.top,
+          left: tipPos.left,
+          transform: 'translateY(-100%)',
+          width: TOOLTIP_W,
           background: BG,
           border: `1px solid ${BORDER}`,
           borderRadius: 10,
           padding: '10px 14px',
-          boxShadow: '0 4px 16px rgba(0,0,0,.10)',
-          zIndex: 50,
-          minWidth: 230,
-          whiteSpace: 'nowrap',
+          boxShadow: '0 4px 20px rgba(0,0,0,.15)',
+          zIndex: 9999,
           textAlign: 'left',
         }}>
           <div style={{ fontSize: '0.65rem', fontWeight: 700, color: NAVY, marginBottom: 3 }}>
@@ -156,7 +176,7 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
                 <div key={label} style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  gap: 20,
+                  gap: 12,
                   fontSize: '0.65rem',
                   marginBottom: 3,
                 }}>
