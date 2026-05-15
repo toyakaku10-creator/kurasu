@@ -316,7 +316,7 @@ export default function InputClient() {
           }}
         >
           <TrendingUp size={14} />
-          シミュレーション開始
+          シミュレーション
         </button>
       </footer>
     </div>
