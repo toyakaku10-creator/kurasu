@@ -398,14 +398,14 @@ export default function ResultClient() {
                 color: NAVY,
                 background: BG,
                 border: `1px solid ${BORDER}`,
-                width: 200,
-                height: 100,
+                width: 120,
+                height: 60,
                 borderRadius: '0 0 9999px 9999px',
-                boxShadow: `0 4px 12px rgba(0,0,0,.07)`,
-                fontSize: '0.75rem',
+                boxShadow: `0 4px 10px rgba(0,0,0,.07)`,
+                fontSize: '0.65rem',
               }}
             >
-              <SlidersHorizontal size={16} />
+              <SlidersHorizontal size={13} />
               設定に戻る
             </button>
           </div>
