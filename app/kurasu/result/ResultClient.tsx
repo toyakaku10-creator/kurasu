@@ -50,11 +50,7 @@ const tbl = (v: number) => {
 const tblAsset = (v: number) => {
   if (v === 0) return '—';
   const m = Math.round(v / 10_000);
-  if (m === 0) return '—';
-  if (m < 10_000) return m.toLocaleString();
-  const oku = Math.floor(m / 10_000);
-  const rem = m % 10_000;
-  return rem === 0 ? `${oku.toLocaleString()}億` : `${oku.toLocaleString()}億${rem.toLocaleString()}万`;
+  return m === 0 ? '—' : m.toLocaleString();
 };
 const tblSigned = (v: number) => {
   const m = Math.round(v / 10_000);
@@ -352,12 +348,12 @@ export default function ResultClient() {
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
               <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '14px', tableLayout: 'fixed' }}>
                 <colgroup>
-                  <col style={{ width: '13%' }} />  {/* 西暦   4桁 */}
-                  <col style={{ width:  '8%' }} />  {/* 齢     2桁 */}
-                  <col style={{ width: '22%' }} />  {/* 総資産 最大9桁（億表示） */}
-                  <col style={{ width: '14%' }} />  {/* 配当   7桁 */}
-                  <col style={{ width: '11%' }} />  {/* 年金   6桁 */}
-                  <col style={{ width: '11%' }} />  {/* 支出   6桁 */}
+                  <col style={{ width: '11%' }} />  {/* 西暦   4桁 */}
+                  <col style={{ width:  '6%' }} />  {/* 齢     2桁 */}
+                  <col style={{ width: '23%' }} />  {/* 総資産 万円カンマ */}
+                  <col style={{ width: '15%' }} />  {/* 配当   7桁 */}
+                  <col style={{ width: '12%' }} />  {/* 年金   6桁 */}
+                  <col style={{ width: '12%' }} />  {/* 支出   6桁 */}
                   <col style={{ width: '21%' }} />  {/* 収支   8桁 */}
                 </colgroup>
                 <thead>
