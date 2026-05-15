@@ -312,13 +312,14 @@ export default function ResultClient() {
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
               <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '14px', tableLayout: 'fixed' }}>
                 <colgroup>
-                  <col style={{ width: '11%' }} />  {/* 西暦   4桁 */}
-                  <col style={{ width:  '6%' }} />  {/* 齢     2桁 */}
-                  <col style={{ width: '23%' }} />  {/* 総資産 万円カンマ */}
-                  <col style={{ width: '15%' }} />  {/* 配当   7桁 */}
-                  <col style={{ width: '12%' }} />  {/* 年金   6桁 */}
-                  <col style={{ width: '12%' }} />  {/* 支出   6桁 */}
-                  <col style={{ width: '21%' }} />  {/* 収支   8桁 */}
+                  <col style={{ width: '10%' }} />  {/* 西暦      */}
+                  <col style={{ width:  '6%' }} />  {/* 齢        */}
+                  <col style={{ width: '20%' }} />  {/* 総資産    */}
+                  <col style={{ width: '13%' }} />  {/* 配当      */}
+                  <col style={{ width: '11%' }} />  {/* 年金      */}
+                  <col style={{ width: '11%' }} />  {/* その他    */}
+                  <col style={{ width: '11%' }} />  {/* 支出      */}
+                  <col style={{ width: '18%' }} />  {/* 収支      */}
                 </colgroup>
                 <thead>
                   <tr style={{
@@ -332,6 +333,7 @@ export default function ResultClient() {
                       { label: '総資産', align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
                       { label: '配当',   align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
                       { label: '年金',   align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
+                      { label: 'その他', align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
                       { label: '支出',   align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
                       { label: '収支',   align: 'right', pl: '4px', pr: '14px', bold: true, divider: false },
                     ] as const).map(({ label, align, pl, pr, bold, divider }) => (
@@ -347,13 +349,17 @@ export default function ResultClient() {
                 <tbody>
                   {rows.map((r, i) => {
                     const preRetirement = r.age < params.retirementAge;
-                    const otherIncome = (params.reinvestRetirement ? 0 : r.retirementIncome + r.iDeCoIncome) + r.pensionPublic + r.pensionBenefit;
+                    // 年金列: 公的年金+年金払い退職給付のみ
+                    const pensionIncome = r.pensionPublic + r.pensionBenefit;
+                    // その他列: 再投資OFFのときのみ退職金・iDeCo受取を表示
+                    const otherIncome = params.reinvestRetirement ? 0 : r.retirementIncome + r.iDeCoIncome;
                     const yoyDiff = i > 0 ? r.totalAssets - rows[i - 1].totalAssets : null;
                     // 収支 = 表示値（万円丸め後）の和差で計算してズレをなくす
-                    const mDiv   = Math.round(r.dividendIncome / 10_000);
-                    const mOther = Math.round(otherIncome      / 10_000);
-                    const mExp   = Math.round(r.livingExpense  / 10_000);
-                    const mBal   = mDiv + mOther - mExp;
+                    const mDiv     = Math.round(r.dividendIncome / 10_000);
+                    const mPension = Math.round(pensionIncome    / 10_000);
+                    const mOther   = Math.round(otherIncome      / 10_000);
+                    const mExp     = Math.round(r.livingExpense  / 10_000);
+                    const mBal     = mDiv + mPension + mOther - mExp;
                     return (
                       <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
                         {/* 1. 西暦 */}
@@ -365,7 +371,7 @@ export default function ResultClient() {
                           style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}` }}>
                           {r.age}
                         </td>
-                        {/* 3. 総資産 + ホバー内訳（億表示対応） */}
+                        {/* 3. 総資産 + ホバー内訳 */}
                         <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px' }}>
                           <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
                         </td>
@@ -374,15 +380,19 @@ export default function ResultClient() {
                           style={{ color: preRetirement ? SUB : NAVY, paddingLeft: '4px', paddingRight: '4px' }}>
                           {preRetirement ? '—' : tbl(r.dividendIncome)}
                         </td>
-                        {/* 5. 年金 */}
+                        {/* 5. 年金（公的年金+年金払い退職給付のみ） */}
                         <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
-                          {preRetirement ? '—' : tbl(otherIncome)}
+                          {tbl(pensionIncome)}
                         </td>
-                        {/* 6. 支出 */}
+                        {/* 6. その他収入（再投資OFFのみ退職金・iDeCo） */}
+                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
+                          {tbl(otherIncome)}
+                        </td>
+                        {/* 7. 支出 */}
                         <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
                           {tbl(r.livingExpense)}
                         </td>
-                        {/* 7. 収支（表示値ベースで計算） */}
+                        {/* 8. 収支（表示値ベースで計算） */}
                         <td className="py-1 text-right tabular-nums font-semibold"
                           style={{ color: preRetirement ? SUB : mBal >= 0 ? GREEN : RED, paddingLeft: '4px', paddingRight: '14px' }}>
                           {preRetirement ? '—' : mBal === 0 ? '—' : (mBal > 0 ? '+' : '') + mBal.toLocaleString()}
