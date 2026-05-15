@@ -249,13 +249,6 @@ export default function ResultClient() {
           <h1 className="text-xl font-bold tracking-wider" style={{ color: NAVY }}>kurasu</h1>
           <p className="text-xs mt-0.5" style={{ color: SUB }}>シミュレーション結果</p>
         </div>
-        <button
-          onClick={() => router.push('/kurasu')}
-          className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:bg-gray-50"
-          style={{ color: NAVY, border: `1px solid ${BORDER}` }}
-        >
-          <SlidersHorizontal size={15} /> 設定に戻る
-        </button>
       </header>
 
       {/* Content */}
@@ -405,14 +398,14 @@ export default function ResultClient() {
                 color: NAVY,
                 background: BG,
                 border: `1px solid ${BORDER}`,
-                width: 220,
-                height: 110,
+                width: 160,
+                height: 72,
                 borderRadius: '0 0 9999px 9999px',
-                boxShadow: `0 4px 16px rgba(0,0,0,.08)`,
-                fontSize: '0.85rem',
+                boxShadow: `0 4px 12px rgba(0,0,0,.07)`,
+                fontSize: '0.75rem',
               }}
             >
-              <SlidersHorizontal size={22} />
+              <SlidersHorizontal size={16} />
               設定に戻る
             </button>
           </div>

@@ -308,14 +308,14 @@ export default function InputClient() {
           style={{
             background: GOLD,
             color: NAVY,
-            width: 280,
-            height: 140,
+            width: 160,
+            height: 72,
             borderRadius: '9999px 9999px 0 0',
-            boxShadow: `0 -4px 24px ${GOLD}66`,
-            fontSize: '0.85rem',
+            boxShadow: `0 -4px 20px ${GOLD}55`,
+            fontSize: '0.75rem',
           }}
         >
-          <TrendingUp size={28} />
+          <TrendingUp size={18} />
           シミュレーション開始
         </button>
       </footer>
