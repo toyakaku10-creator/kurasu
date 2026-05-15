@@ -60,7 +60,8 @@ const tblSigned = (v: number) => {
 };
 
 // ── localStorage ──────────────────────────────
-const LS_KEY = 'kurasu-params-v1';
+const LS_KEY        = 'kurasu-params-v1';
+const LS_ACTUAL_KEY = 'kurasu-actual-v1';
 
 function loadParams(): Params {
   try {
@@ -68,6 +69,79 @@ function loadParams(): Params {
     if (raw) return { ...DEFAULT_PARAMS, ...JSON.parse(raw) };
   } catch {}
   return DEFAULT_PARAMS;
+}
+
+// ── Actual data ────────────────────────────────
+interface ActualEntry { totalAsset?: number; dividend?: number; expense?: number; } // 万円
+type ActualData = Record<string, ActualEntry>; // keyed by year string
+
+function loadActual(): ActualData {
+  try { const r = localStorage.getItem(LS_ACTUAL_KEY); if (r) return JSON.parse(r); } catch {}
+  return {};
+}
+function saveActual(d: ActualData) {
+  try { localStorage.setItem(LS_ACTUAL_KEY, JSON.stringify(d)); } catch {}
+}
+
+// ── Actual input modal ─────────────────────────
+function ActualModal({ year, entry, onSave, onDelete, onClose }: {
+  year: number;
+  entry?: ActualEntry;
+  onSave: (e: ActualEntry) => void;
+  onDelete: () => void;
+  onClose: () => void;
+}) {
+  const [asset, setAsset] = useState(entry?.totalAsset?.toString() ?? '');
+  const [div,   setDiv]   = useState(entry?.dividend?.toString()   ?? '');
+  const [exp,   setExp]   = useState(entry?.expense?.toString()    ?? '');
+
+  const fields = [
+    { label: '総資産（万円）', value: asset, set: setAsset },
+    { label: '配当金（万円）', value: div,   set: setDiv   },
+    { label: '生活費（万円）', value: exp,   set: setExp   },
+  ];
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: BG, borderRadius: 16, padding: '24px 20px', width: '88%', maxWidth: 320, boxShadow: '0 8px 32px rgba(0,0,0,.2)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ fontSize: '0.9rem', fontWeight: 700, color: NAVY, marginBottom: 16 }}>{year}年 実績入力</div>
+        {fields.map(({ label, value, set }) => (
+          <div key={label} style={{ marginBottom: 12 }}>
+            <label style={{ fontSize: '0.7rem', color: SUB, display: 'block', marginBottom: 4 }}>{label}</label>
+            <input
+              type="number" inputMode="numeric" value={value}
+              onChange={e => set(e.target.value)} placeholder="未入力"
+              style={{ width: '100%', border: `1px solid ${BORDER}`, borderRadius: 8, padding: '8px 10px', fontSize: '0.9rem', color: NAVY, outline: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
+        ))}
+        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+          <button
+            onClick={() => onSave({
+              totalAsset: asset ? Number(asset) : undefined,
+              dividend:   div   ? Number(div)   : undefined,
+              expense:    exp   ? Number(exp)    : undefined,
+            })}
+            style={{ flex: 1, background: GOLD, color: NAVY, border: 'none', borderRadius: 8, padding: '10px 0', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+          >保存</button>
+          {entry && (
+            <button onClick={onDelete}
+              style={{ background: '#fee2e2', color: RED, border: 'none', borderRadius: 8, padding: '10px 12px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+            >削除</button>
+          )}
+          <button onClick={onClose}
+            style={{ background: CARD, color: SUB, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '10px 12px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+          >キャンセル</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── Custom tooltip ─────────────────────────────
@@ -202,9 +276,26 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 // ── Main ──────────────────────────────────────
 export default function ResultClient() {
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
+  const [actuals, setActuals] = useState<ActualData>({});
+  const [modalYear, setModalYear] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => { setParams(loadParams()); }, []);
+  useEffect(() => { setActuals(loadActual()); }, []);
+
+  const handleSaveActual = (year: number, entry: ActualEntry) => {
+    const next = { ...actuals, [String(year)]: entry };
+    setActuals(next);
+    saveActual(next);
+    setModalYear(null);
+  };
+  const handleDeleteActual = (year: number) => {
+    const next = { ...actuals };
+    delete next[String(year)];
+    setActuals(next);
+    saveActual(next);
+    setModalYear(null);
+  };
 
   const rows        = useMemo(() => simulate(params), [params]);
   const fireAge     = useMemo(() => getFireAge(rows), [rows]);
@@ -303,35 +394,37 @@ export default function ResultClient() {
             </div>
             {/* scroll container — both axes, sticky header works inside a single overflow:auto */}
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
-              <table className="border-collapse" style={{ minWidth: '320px', width: '100%', fontSize: '14px', tableLayout: 'fixed' }}>
+              <table className="border-collapse" style={{ minWidth: '580px', width: '100%', fontSize: '13px', tableLayout: 'fixed' }}>
                 <colgroup>
-                  <col style={{ width: '11%' }} />  {/* 西暦      */}
-                  <col style={{ width:  '6%' }} />  {/* 齢        */}
-                  <col style={{ width: '23%' }} />  {/* 総資産    */}
-                  <col style={{ width: '15%' }} />  {/* 配当      */}
-                  <col style={{ width: '12%' }} />  {/* 年金      */}
-                  <col style={{ width: '12%' }} />  {/* 支出      */}
-                  <col style={{ width: '21%' }} />  {/* 収支      */}
+                  <col style={{ width: '8%'  }} />  {/* 西暦       */}
+                  <col style={{ width: '5%'  }} />  {/* 齢         */}
+                  <col style={{ width: '11%' }} />  {/* 総資産(計) */}
+                  <col style={{ width: '11%' }} />  {/* 総資産(実) */}
+                  <col style={{ width: '9%'  }} />  {/* 配当(計)   */}
+                  <col style={{ width: '9%'  }} />  {/* 配当(実)   */}
+                  <col style={{ width: '9%'  }} />  {/* 年金       */}
+                  <col style={{ width: '9%'  }} />  {/* 支出(計)   */}
+                  <col style={{ width: '9%'  }} />  {/* 支出(実)   */}
+                  <col style={{ width: '10%' }} />  {/* 収支       */}
                 </colgroup>
                 <thead>
-                  <tr style={{
-                    position: 'sticky', top: 0, zIndex: 1,
-                    background: CARD,
-                    boxShadow: `0 1px 0 ${BORDER}`,
-                  }}>
+                  <tr style={{ position: 'sticky', top: 0, zIndex: 1, background: CARD, boxShadow: `0 1px 0 ${BORDER}` }}>
                     {([
-                      { label: '西暦',   align: 'left',  pl: '4px', pr: '4px', bold: false, divider: false },
-                      { label: '齢',     align: 'right', pl: '2px', pr: '4px', bold: false, divider: true  },
-                      { label: '総資産', align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
-                      { label: '配当',   align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
-                      { label: '年金',   align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
-                      { label: '支出',   align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
-                      { label: '収支',   align: 'right', pl: '4px', pr: '14px', bold: true, divider: false },
+                      { label: '西暦',    align: 'left',  pl: '4px', pr: '2px', bold: false, divider: false },
+                      { label: '齢',      align: 'right', pl: '2px', pr: '4px', bold: false, divider: true  },
+                      { label: '総資産↓', align: 'right', pl: '4px', pr: '2px', bold: true,  divider: false },
+                      { label: '実績',    align: 'right', pl: '2px', pr: '4px', bold: true,  divider: false },
+                      { label: '配当↓',  align: 'right', pl: '4px', pr: '2px', bold: true,  divider: false },
+                      { label: '実績',    align: 'right', pl: '2px', pr: '4px', bold: true,  divider: false },
+                      { label: '年金',    align: 'right', pl: '4px', pr: '4px', bold: true,  divider: false },
+                      { label: '支出↓',  align: 'right', pl: '4px', pr: '2px', bold: true,  divider: false },
+                      { label: '実績',    align: 'right', pl: '2px', pr: '4px', bold: true,  divider: false },
+                      { label: '収支',    align: 'right', pl: '4px', pr: '14px', bold: true, divider: false },
                     ] as const).map(({ label, align, pl, pr, bold, divider }) => (
-                      <th key={label}
+                      <th key={label + pl}
                         className={`py-1 whitespace-nowrap ${bold ? 'font-semibold' : 'font-normal'}`}
                         style={{ color: SUB, textAlign: align, paddingLeft: pl, paddingRight: pr,
-                          borderRight: divider ? `1px solid ${BORDER}` : undefined }}>
+                          borderRight: divider ? `1px solid ${BORDER}` : undefined, fontSize: '0.7rem' }}>
                         {label}
                       </th>
                     ))}
@@ -340,18 +433,26 @@ export default function ResultClient() {
                 <tbody>
                   {rows.map((r, i) => {
                     const preRetirement = r.age < params.retirementAge;
-                    // 年金列: 公的年金+年金払い退職給付のみ（退職金・iDeCoは含めない）
                     const pensionIncome = r.pensionPublic + r.pensionBenefit;
                     const yoyDiff = i > 0 ? r.totalAssets - rows[i - 1].totalAssets : null;
-                    // 収支 = 配当 + 年金 - 支出（表示値ベース）
                     const mDiv     = Math.round(r.dividendIncome / 10_000);
                     const mPension = Math.round(pensionIncome    / 10_000);
                     const mExp     = Math.round(r.livingExpense  / 10_000);
                     const mBal     = mDiv + mPension - mExp;
+                    const act      = actuals[String(r.year)];
+                    const hasActual = !!act;
+                    const rowBg = hasActual ? `${GOLD}18` : undefined;
+
+                    // diff helpers (actual - plan, in 万: positive=actual > plan)
+                    const diffColor = (diff: number, higherBetter: boolean) =>
+                      diff === 0 ? SUB : (diff > 0) === higherBetter ? GREEN : RED;
+
                     return (
-                      <tr key={r.age} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                      <tr key={r.age}
+                        onClick={() => setModalYear(r.year)}
+                        style={{ borderBottom: `1px solid ${BORDER}`, background: rowBg, cursor: 'pointer' }}>
                         {/* 1. 西暦 */}
-                        <td className="py-1 font-normal tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
+                        <td className="py-1 font-normal tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '2px' }}>
                           {r.year}
                         </td>
                         {/* 2. 齢 */}
@@ -359,24 +460,49 @@ export default function ResultClient() {
                           style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}` }}>
                           {r.age}
                         </td>
-                        {/* 3. 総資産 + ホバー内訳 */}
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px' }}>
+                        {/* 3. 総資産(計) */}
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '2px' }}
+                          onClick={e => e.stopPropagation()}>
                           <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
                         </td>
-                        {/* 4. 配当 */}
+                        {/* 4. 総資産(実) */}
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '2px', paddingRight: '4px' }}>
+                          {act?.totalAsset != null ? (
+                            <span style={{ color: diffColor(act.totalAsset - Math.round(r.totalAssets / 10_000), true) }}>
+                              {act.totalAsset.toLocaleString()}
+                            </span>
+                          ) : <span style={{ color: SUB }}>—</span>}
+                        </td>
+                        {/* 5. 配当(計) */}
                         <td className="py-1 text-right tabular-nums"
-                          style={{ color: preRetirement ? SUB : NAVY, paddingLeft: '4px', paddingRight: '4px' }}>
+                          style={{ color: preRetirement ? SUB : NAVY, paddingLeft: '4px', paddingRight: '2px' }}>
                           {preRetirement ? '—' : tbl(r.dividendIncome)}
                         </td>
-                        {/* 5. 年金（公的年金+年金払い退職給付のみ） */}
+                        {/* 6. 配当(実) */}
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '2px', paddingRight: '4px' }}>
+                          {act?.dividend != null ? (
+                            <span style={{ color: diffColor(act.dividend - Math.round(r.dividendIncome / 10_000), true) }}>
+                              {act.dividend.toLocaleString()}
+                            </span>
+                          ) : <span style={{ color: SUB }}>—</span>}
+                        </td>
+                        {/* 7. 年金 */}
                         <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
                           {tbl(pensionIncome)}
                         </td>
-                        {/* 6. 支出 */}
-                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
+                        {/* 8. 支出(計) */}
+                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '2px' }}>
                           {tbl(r.livingExpense)}
                         </td>
-                        {/* 7. 収支（配当+年金−支出） */}
+                        {/* 9. 支出(実) */}
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '2px', paddingRight: '4px' }}>
+                          {act?.expense != null ? (
+                            <span style={{ color: diffColor(act.expense - Math.round(r.livingExpense / 10_000), false) }}>
+                              {act.expense.toLocaleString()}
+                            </span>
+                          ) : <span style={{ color: SUB }}>—</span>}
+                        </td>
+                        {/* 10. 収支 */}
                         <td className="py-1 text-right tabular-nums font-semibold"
                           style={{ color: preRetirement ? SUB : mBal >= 0 ? GREEN : RED, paddingLeft: '4px', paddingRight: '14px' }}>
                           {preRetirement ? '—' : mBal === 0 ? '—' : (mBal > 0 ? '+' : '') + mBal.toLocaleString()}
@@ -412,6 +538,17 @@ export default function ResultClient() {
 
         </div>
       </main>
+
+      {/* Actual data modal */}
+      {modalYear !== null && (
+        <ActualModal
+          year={modalYear}
+          entry={actuals[String(modalYear)]}
+          onSave={(e) => handleSaveActual(modalYear, e)}
+          onDelete={() => handleDeleteActual(modalYear)}
+          onClose={() => setModalYear(null)}
+        />
+      )}
     </div>
   );
 }

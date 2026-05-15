@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   User, TrendingUp, Landmark, Home, Building2, LogOut, Coins, RefreshCw, ChevronUp, ChevronDown,
+  Download, Upload,
 } from 'lucide-react';
 import { DEFAULT_PARAMS } from './simulation';
 import type { Params } from './simulation';
@@ -40,7 +41,8 @@ const age  = (v: number) => `${v}歳`;
 const yr   = (v: number) => `${v}年`;
 
 // ── localStorage ──────────────────────────────
-const LS_KEY = 'kurasu-params-v1';
+const LS_KEY        = 'kurasu-params-v1';
+const LS_ACTUAL_KEY = 'kurasu-actual-v1';
 
 function loadParams(): Params {
   try {
@@ -136,6 +138,7 @@ function Full({ children }: { children: React.ReactNode }) {
 export default function InputClient() {
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS);
   const router = useRouter();
+  const importRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setParams(loadParams()); }, []);
 
@@ -149,6 +152,39 @@ export default function InputClient() {
     const clamped = Math.min(60, Math.max(params.currentAge, params.retirementAge));
     if (clamped !== params.retirementAge) set('retirementAge', clamped);
   }, [params.currentAge, params.retirementAge, set]);
+
+  const handleExport = useCallback(() => {
+    const actuals = (() => { try { const r = localStorage.getItem(LS_ACTUAL_KEY); return r ? JSON.parse(r) : {}; } catch { return {}; } })();
+    const data = { params, actuals };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kurasu-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [params]);
+
+  const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target?.result as string);
+        if (data.params) {
+          const merged: Params = { ...DEFAULT_PARAMS, ...data.params };
+          saveParams(merged);
+          setParams(merged);
+        }
+        if (data.actuals) {
+          try { localStorage.setItem(LS_ACTUAL_KEY, JSON.stringify(data.actuals)); } catch {}
+        }
+      } catch {}
+      if (importRef.current) importRef.current.value = '';
+    };
+    reader.readAsText(file);
+  }, []);
 
   const handleStart = useCallback(() => {
     saveParams(params);
@@ -293,6 +329,35 @@ export default function InputClient() {
                 onChange={(v) => set('reinvestRetirement', v)} />
             </Full>
           </Sec>
+
+          {/* Export / Import */}
+          <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${BORDER}`, background: BG, boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+            <div className="px-5 py-3.5 text-sm font-bold" style={{ background: CARD, color: NAVY, borderBottom: `1px solid ${BORDER}` }}>
+              データ管理
+            </div>
+            <div className="px-5 py-5 flex flex-col gap-3" style={{ background: BG }}>
+              <p className="text-xs" style={{ color: SUB }}>設定値と実績データをまとめてJSONで保存・読み込みできます。</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleExport}
+                  className="flex items-center gap-2 font-semibold text-sm px-4 py-2.5 rounded-xl transition-opacity hover:opacity-80"
+                  style={{ background: NAVY, color: '#fff', border: 'none', cursor: 'pointer' }}
+                >
+                  <Download size={14} />
+                  エクスポート
+                </button>
+                <button
+                  onClick={() => importRef.current?.click()}
+                  className="flex items-center gap-2 font-semibold text-sm px-4 py-2.5 rounded-xl transition-opacity hover:opacity-80"
+                  style={{ background: CARD, color: NAVY, border: `1px solid ${BORDER}`, cursor: 'pointer' }}
+                >
+                  <Upload size={14} />
+                  インポート
+                </button>
+                <input ref={importRef} type="file" accept=".json" onChange={handleImport} style={{ display: 'none' }} />
+              </div>
+            </div>
+          </div>
 
         </div>
       </main>
