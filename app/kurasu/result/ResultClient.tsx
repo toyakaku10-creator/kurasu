@@ -396,13 +396,23 @@ export default function ResultClient() {
             </div>
           </div>
 
-          {/* Bottom back button */}
-          <div className="flex justify-center pb-4">
+          {/* Bottom back button — 下半円デザイン */}
+          <div className="flex justify-center pt-2 pb-0">
             <button
               onClick={() => router.push('/kurasu')}
-              className="flex items-center gap-2 text-sm font-semibold px-6 py-3 rounded-xl transition-colors hover:bg-gray-100"
-              style={{ color: NAVY, border: `1px solid ${BORDER}`, background: BG }}
+              className="flex flex-col items-center justify-center gap-1 font-semibold transition-transform active:scale-95 hover:opacity-80"
+              style={{
+                color: NAVY,
+                background: BG,
+                border: `1px solid ${BORDER}`,
+                width: 220,
+                height: 110,
+                borderRadius: '0 0 9999px 9999px',
+                boxShadow: `0 4px 16px rgba(0,0,0,.08)`,
+                fontSize: '0.85rem',
+              }}
             >
+              <SlidersHorizontal size={22} />
               設定に戻る
             </button>
           </div>

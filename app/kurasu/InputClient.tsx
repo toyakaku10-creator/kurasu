@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  User, TrendingUp, Landmark, Home, Building2, LogOut, Coins, RefreshCw, PlayCircle, ChevronUp, ChevronDown,
+  User, TrendingUp, Landmark, Home, Building2, LogOut, Coins, RefreshCw, ChevronUp, ChevronDown,
 } from 'lucide-react';
 import { DEFAULT_PARAMS } from './simulation';
 import type { Params } from './simulation';
@@ -308,14 +308,14 @@ export default function InputClient() {
           style={{
             background: GOLD,
             color: NAVY,
-            width: 220,
-            height: 110,
+            width: 280,
+            height: 140,
             borderRadius: '9999px 9999px 0 0',
             boxShadow: `0 -4px 24px ${GOLD}66`,
             fontSize: '0.85rem',
           }}
         >
-          <PlayCircle size={28} />
+          <TrendingUp size={28} />
           シミュレーション開始
         </button>
       </footer>
