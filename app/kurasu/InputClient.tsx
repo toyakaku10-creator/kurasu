@@ -136,16 +136,16 @@ export default function InputClient() {
 
   useEffect(() => { setParams(loadParams()); }, []);
 
-  useEffect(() => {
-    const clamped = Math.min(60, Math.max(params.currentAge, params.retirementAge));
-    if (clamped !== params.retirementAge) set('retirementAge', clamped);
-  }, [params.currentAge, params.retirementAge, set]);
-
   const set = useCallback(
     <K extends keyof Params>(key: K, value: Params[K]) =>
       setParams((p) => ({ ...p, [key]: value })),
     []
   );
+
+  useEffect(() => {
+    const clamped = Math.min(60, Math.max(params.currentAge, params.retirementAge));
+    if (clamped !== params.retirementAge) set('retirementAge', clamped);
+  }, [params.currentAge, params.retirementAge, set]);
 
   const handleStart = useCallback(() => {
     saveParams(params);
