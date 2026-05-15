@@ -102,13 +102,15 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
   const triggerRef = useRef<HTMLDivElement>(null);
 
   const items: Array<{ label: string; value: number }> = [];
-  if (r.assetAppreciation > 0)  items.push({ label: '株式・金評価増',  value:  r.assetAppreciation });
-  if (r.dividendReinvest > 0)   items.push({ label: '配当再投資',       value:  r.dividendReinvest });
-  if (r.retirementReinvest > 0) items.push({ label: '退職金再投資',     value:  r.retirementReinvest });
-  if (r.iDeCoReinvest > 0)      items.push({ label: 'iDeCo再投資',      value:  r.iDeCoReinvest });
-  if (r.surplusReinvest > 0)    items.push({ label: '余剰再投資',        value:  r.surplusReinvest });
-  if (r.cashDrawdown > 0)       items.push({ label: '生活費補填',        value: -r.cashDrawdown });
-  if (r.stockDrawdown > 0)      items.push({ label: '取り崩し',          value: -r.stockDrawdown });
+  if (r.assetAppreciation > 0)       items.push({ label: '株式・金評価増', value:  r.assetAppreciation });
+  if (r.dividendReinvest > 0)        items.push({ label: '配当再投資',     value:  r.dividendReinvest });
+  if (r.retirementReinvest > 0)      items.push({ label: '退職金再投資',   value:  r.retirementReinvest });
+  else if (r.retirementIncome > 0)   items.push({ label: '退職金受取',     value:  r.retirementIncome });
+  if (r.iDeCoReinvest > 0)           items.push({ label: 'iDeCo再投資',    value:  r.iDeCoReinvest });
+  else if (r.iDeCoIncome > 0)        items.push({ label: 'iDeCo受取',      value:  r.iDeCoIncome });
+  if (r.surplusReinvest > 0)         items.push({ label: '余剰再投資',     value:  r.surplusReinvest });
+  if (r.cashDrawdown > 0)            items.push({ label: '生活費補填',     value: -r.cashDrawdown });
+  if (r.stockDrawdown > 0)           items.push({ label: '取り崩し',       value: -r.stockDrawdown });
 
   const openTooltip = () => {
     if (!triggerRef.current) return;
