@@ -62,10 +62,11 @@ function saveParams(p: Params) {
 
 // ── Slider ────────────────────────────────────
 function Slider({
-  label, value, onChange, min, max, step, display,
+  label, value, onChange, min, max, step, display, hint,
 }: {
   label: string; value: number; onChange: (v: number) => void;
   min: number; max: number; step: number; display: (v: number) => string;
+  hint?: string;
 }) {
   const fill = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
   return (
@@ -80,6 +81,7 @@ function Slider({
         onChange={(e) => onChange(Number(e.target.value))}
         style={{ background: `linear-gradient(to right,${GOLD} 0%,${GOLD} ${fill}%,${BORDER} ${fill}%,${BORDER} 100%)` }}
       />
+      {hint && <span className="text-xs" style={{ color: SUB }}>{hint}</span>}
     </div>
   );
 }
@@ -303,8 +305,9 @@ export default function InputClient() {
               <Slider label="退職年齢" value={params.retirementAge}
                 onChange={(v) => set('retirementAge', v)} min={params.currentAge} max={60} step={1} display={age} />
             )}
-            <Slider label="勤続年数" value={params.yearsOfService}
-              onChange={(v) => set('yearsOfService', v)} min={1} max={45} step={1} display={yr} />
+            <Slider label="退職時の勤続年数" value={params.yearsOfService}
+              onChange={(v) => set('yearsOfService', v)} min={1} max={45} step={1} display={yr}
+              hint={`退職所得控除：${Math.round((params.yearsOfService <= 20 ? 400_000 * params.yearsOfService : 8_000_000 + 700_000 * (params.yearsOfService - 20)) / 10_000).toLocaleString()}万円`} />
             <Full>
               <Slider label="退職金" value={params.retirementPayment}
                 onChange={(v) => set('retirementPayment', v)} min={0} max={50_000_000} step={500_000} display={yen} />

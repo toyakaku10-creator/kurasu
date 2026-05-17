@@ -88,7 +88,7 @@ export const DEFAULT_PARAMS: Params = {
   iDeCoYearsOfMembership: 14,
   retirementAge: 60,
   retirementPayment: 21_000_000,
-  yearsOfService: 35,
+  yearsOfService: 38,
   pensionMonthly: 150_000,
   pensionStartAge: 65,
   pensionRetirementBenefitMonthly: 15_000,
