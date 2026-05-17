@@ -261,14 +261,10 @@ export function simulate(params: Params): YearRow[] {
         kyosaiSavingFund = 0;
       }
     }
-    // Annual pension payout ages 60–69
+    // Annual pension payout ages 60–69 — treated like public pension (always spendable income)
     if (age >= 60 && age < 70 && kyosaiPensionAnnual > 0) {
       kyosaiPensionIncome = kyosaiPensionAnnual;
       kyosaiPensionFund = Math.max(0, kyosaiPensionFund - kyosaiPensionAnnual);
-      if (params.reinvestRetirement) {
-        stocks += kyosaiPensionIncome;
-        kyosaiPensionReinvest = kyosaiPensionIncome;
-      }
     }
 
     // Public pension (after 公的年金等控除 & 15% tax on excess)
@@ -289,9 +285,9 @@ export function simulate(params: Params): YearRow[] {
     // Non-dividend spendable income
     const spendableRetirement    = params.reinvestRetirement ? 0 : retirementIncome;
     const spendableIdeco         = params.reinvestRetirement ? 0 : iDeCoIncome;
-    const spendableKyosaiSaving  = params.reinvestRetirement ? 0 : kyosaiSavingIncome;
-    const spendableKyosaiPension = params.reinvestRetirement ? 0 : kyosaiPensionIncome;
-    const nonDivIncome = spendableRetirement + spendableIdeco + pensionPublic + pensionBenefit + spendableKyosaiSaving + spendableKyosaiPension;
+    const spendableKyosaiSaving = params.reinvestRetirement ? 0 : kyosaiSavingIncome;
+    // kyosaiPensionIncome is always spendable income (like public pension)
+    const nonDivIncome = spendableRetirement + spendableIdeco + pensionPublic + pensionBenefit + kyosaiPensionIncome + spendableKyosaiSaving;
 
     // Asset draw / reinvest — dividend computed AFTER drawdown on post-drawdown stock balance
     let dividendAfterTax = 0;

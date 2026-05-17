@@ -174,7 +174,7 @@ function TotalAssetsCell({ r, yoyDiff, isRetired }: { r: YearRow; yoyDiff: numbe
 
   // 退職前: 評価増 + 配当再投資  /  退職後: 評価増 + 収支 + 再投資一時金
   const yoy = isRetired
-    ? r.assetAppreciation + r.balance + r.retirementReinvest + r.iDeCoReinvest + r.kyosaiSavingReinvest + r.kyosaiPensionReinvest
+    ? r.assetAppreciation + r.balance + r.retirementReinvest + r.iDeCoReinvest + r.kyosaiSavingReinvest
     : r.assetAppreciation + r.dividendReinvest;
 
   const openTooltip = () => {
@@ -238,7 +238,6 @@ function TotalAssetsCell({ r, yoyDiff, isRetired }: { r: YearRow; yoyDiff: numbe
                   {r.retirementReinvest > 0 && row('退職金再投資', r.retirementReinvest)}
                   {r.iDeCoReinvest > 0 && row('iDeCo再投資', r.iDeCoReinvest)}
                   {r.kyosaiSavingReinvest > 0 && row('共済積立再投資', r.kyosaiSavingReinvest)}
-                  {r.kyosaiPensionReinvest > 0 && row('年金共済再投資', r.kyosaiPensionReinvest)}
                 </>
               ) : (
                 r.dividendReinvest > 0 && row('配当再投資', r.dividendReinvest)
