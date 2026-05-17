@@ -485,8 +485,8 @@ export default function ResultClient() {
                           {dispExpM === 0 ? '—' : dispExpM.toLocaleString()}
                         </td>
                         {/* 7. 収支 */}
-                        <td className="py-1 text-right tabular-nums font-semibold"
-                          style={{ paddingLeft: '4px', paddingRight: '14px',
+                        <td className="py-1 tabular-nums font-semibold"
+                          style={{ paddingLeft: '4px', paddingRight: '14px', textAlign: 'right',
                             color: showPre ? SUB : balSrc >= 0 ? GREEN : RED }}>
                           {showPre ? '—' : balSrc === 0 ? '—' : (balSrc > 0 ? '+' : '') + balSrc.toLocaleString()}
                         </td>
