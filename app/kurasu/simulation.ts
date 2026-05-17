@@ -65,8 +65,8 @@ export interface YearRow {
 }
 
 export const DEFAULT_PARAMS: Params = {
-  currentAge: 50,
-  currentYear: 2025,
+  currentAge: 51,
+  currentYear: 2026,
   stockAmount: 15_000_000,
   stockGrowthRate: 0.06,
   stockDividendRate: 0.038,
@@ -144,11 +144,11 @@ export function simulate(params: Params): YearRow[] {
 
   const retirementNet = retirementAfterTax(params.retirementPayment, params.yearsOfService);
 
-  for (let age = params.currentAge; age <= 99; age++) {
+  for (let age = params.currentAge - 1; age <= 99; age++) {
     const year = params.currentYear + (age - params.currentAge);
 
-    // First year: push raw input values, no calculations
-    if (age === params.currentAge) {
+    // First row (previous year-end): push raw input values as starting point, no calculations
+    if (age === params.currentAge - 1) {
       const initTotal = params.stockAmount + params.goldAmount + params.cashAmount;
       rows.push({ age, year, stocks: params.stockAmount, gold: params.goldAmount, cash: params.cashAmount, iDeCoFund: 0, totalAssets: initTotal, dividendIncome: 0, iDeCoIncome: 0, retirementIncome: 0, pensionPublic: 0, pensionBenefit: 0, totalIncome: 0, livingExpense: 0, balance: 0, isFIREYear: false, fireBadge: false, assetAppreciation: 0, dividendReinvest: 0, retirementReinvest: 0, iDeCoReinvest: 0, surplusReinvest: 0, cashDrawdown: 0, stockDrawdown: 0 });
       continue;

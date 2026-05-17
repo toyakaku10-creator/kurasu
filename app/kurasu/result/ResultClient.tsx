@@ -417,56 +417,14 @@ export default function ResultClient() {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Previous year row — actual entry only, no plan values */}
-                  {(() => {
-                    const prevYear = params.currentYear - 1;
-                    const prevAge  = params.currentAge  - 1;
-                    const act      = actuals[String(prevYear)];
-                    const hasActual = !!act;
-                    const dispDivM = act?.dividend  != null ? act.dividend  : null;
-                    const dispExpM = act?.expense   != null ? act.expense   : null;
-                    const dispBalM = dispDivM != null && dispExpM != null ? dispDivM - dispExpM : null;
-                    return (
-                      <tr key="prev"
-                        onClick={() => setModalYear(prevYear)}
-                        style={{ borderBottom: `1px solid ${BORDER}`, background: hasActual ? `${GOLD}18` : undefined, cursor: 'pointer' }}>
-                        <td className="py-1 font-normal tabular-nums"
-                          style={{ color: SUB, paddingLeft: hasActual ? '7px' : '10px', paddingRight: '2px',
-                            borderLeft: hasActual ? `3px solid ${GOLD}` : '3px solid transparent' }}>
-                          {prevYear}
-                        </td>
-                        <td className="py-1 text-right font-normal tabular-nums"
-                          style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}` }}>
-                          {prevAge}
-                        </td>
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px' }}
-                          onClick={e => e.stopPropagation()}>
-                          {act?.totalAsset != null
-                            ? <span style={{ color: GOLD, fontWeight: 600 }}>{act.totalAsset.toLocaleString()}</span>
-                            : <span style={{ color: SUB }}>—</span>}
-                        </td>
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px',
-                          color: dispDivM != null ? GOLD : SUB, fontWeight: dispDivM != null ? 600 : undefined }}>
-                          {dispDivM != null ? dispDivM.toLocaleString() : '—'}
-                        </td>
-                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>—</td>
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px',
-                          color: dispExpM != null ? GOLD : SUB, fontWeight: dispExpM != null ? 600 : undefined }}>
-                          {dispExpM != null ? dispExpM.toLocaleString() : '—'}
-                        </td>
-                        <td className="py-1 text-right tabular-nums font-semibold" style={{ paddingLeft: '4px', paddingRight: '14px',
-                          color: dispBalM == null ? SUB : dispBalM >= 0 ? GREEN : RED }}>
-                          {dispBalM == null ? '—' : dispBalM === 0 ? '—' : (dispBalM > 0 ? '+' : '') + dispBalM.toLocaleString()}
-                        </td>
-                      </tr>
-                    );
-                  })()}
                   {rows.map((r, i) => {
+                    const isStartRow   = i === 0; // previous year-end row (raw input values)
                     const preRetirement = r.age < params.retirementAge;
                     const pensionIncome = r.pensionPublic + r.pensionBenefit;
                     const yoyDiff = i > 0 ? r.totalAssets - rows[i - 1].totalAssets : null;
                     const act = actuals[String(r.year)];
                     const hasActual = !!act;
+                    const highlight = hasActual || isStartRow; // gold styling
 
                     // Use actual values when available, fall back to plan (all in 万円)
                     const dispDivM   = act?.dividend  != null ? act.dividend  : Math.round(r.dividendIncome / 10_000);
@@ -475,19 +433,20 @@ export default function ResultClient() {
                     // balance: use actual values if any actual entered, else plan
                     const balSrc = hasActual ? dispDivM + dispPenM - dispExpM
                       : Math.round(r.dividendIncome / 10_000) + dispPenM - Math.round(r.livingExpense / 10_000);
-                    const showPre = preRetirement && !hasActual;
+                    // start row has all zeros — show '—'; pre-retirement plan rows also show '—' for income
+                    const showPre = (preRetirement || isStartRow) && !hasActual;
 
                     return (
                       <tr key={r.age}
                         onClick={() => setModalYear(r.year)}
-                        style={{ borderBottom: `1px solid ${BORDER}`, background: hasActual ? `${GOLD}18` : undefined, cursor: 'pointer' }}>
-                        {/* 1. 西暦 — gold left-border when actual exists */}
+                        style={{ borderBottom: `1px solid ${BORDER}`, background: highlight ? `${GOLD}18` : undefined, cursor: 'pointer' }}>
+                        {/* 1. 西暦 — gold left-border when highlighted */}
                         <td className="py-1 font-normal tabular-nums"
                           style={{
                             color: SUB,
-                            paddingLeft: hasActual ? '7px' : '10px',
+                            paddingLeft: highlight ? '7px' : '10px',
                             paddingRight: '2px',
-                            borderLeft: hasActual ? `3px solid ${GOLD}` : '3px solid transparent',
+                            borderLeft: highlight ? `3px solid ${GOLD}` : '3px solid transparent',
                           }}>
                           {r.year}
                         </td>
