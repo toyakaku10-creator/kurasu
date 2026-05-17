@@ -389,17 +389,30 @@ export default function ResultClient() {
                 年間別推移
                 <span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円・12月31日時点・行をタップして実績を入力）</span>
               </h2>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                {([
+                  { label: '退職金', color: GOLD },
+                  { label: 'iDeCo',  color: NAVY },
+                  { label: '共済積立', color: '#2563eb' },
+                  { label: '年金共済', color: '#0d9488' },
+                ] as const).map(({ label, color }) => (
+                  <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.6rem', color: SUB }}>
+                    <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 2, background: color, flexShrink: 0 }} />
+                    {label}
+                  </span>
+                ))}
+              </div>
             </div>
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
               <table className="border-collapse" style={{ minWidth: '360px', width: '100%', fontSize: '13px', tableLayout: 'fixed' }}>
                 <colgroup>
                   <col style={{ width: '10%' }} />  {/* 西暦   */}
-                  <col style={{ width: '6%'  }} />  {/* 齢     */}
-                  <col style={{ width: '18%' }} />  {/* 総資産 */}
+                  <col style={{ width: '14%' }} />  {/* 齢     */}
+                  <col style={{ width: '16%' }} />  {/* 総資産 */}
                   <col style={{ width: '12%' }} />  {/* 配当   */}
                   <col style={{ width: '11%' }} />  {/* 年金   */}
-                  <col style={{ width: '14%' }} />  {/* 支出   */}
-                  <col style={{ width: '16%' }} />  {/* 収支   */}
+                  <col style={{ width: '13%' }} />  {/* 支出   */}
+                  <col style={{ width: '11%' }} />  {/* 収支   */}
                 </colgroup>
                 <thead>
                   <tr style={{ position: 'sticky', top: 0, zIndex: 1, background: CARD, boxShadow: `0 1px 0 ${BORDER}` }}>
@@ -456,14 +469,14 @@ export default function ResultClient() {
                           {r.year}
                         </td>
                         {/* 2. 齢 */}
-                        <td className="py-1 text-right font-normal tabular-nums"
-                          style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}` }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-                            <span>{r.age}</span>
-                            {r.retirementIncome > 0 && <span style={{ fontSize: '0.45rem', background: GOLD, color: '#fff', borderRadius: 2, padding: '0 3px', lineHeight: '1.4', whiteSpace: 'nowrap' }}>退職金</span>}
-                            {r.iDeCoIncome > 0 && <span style={{ fontSize: '0.45rem', background: NAVY, color: '#fff', borderRadius: 2, padding: '0 3px', lineHeight: '1.4', whiteSpace: 'nowrap' }}>iDeCo</span>}
-                            {r.kyosaiSavingIncome > 0 && <span style={{ fontSize: '0.45rem', background: '#2563eb', color: '#fff', borderRadius: 2, padding: '0 3px', lineHeight: '1.4', whiteSpace: 'nowrap' }}>共済積立</span>}
-                            {r.kyosaiPensionIncome > 0 && <span style={{ fontSize: '0.45rem', background: '#0d9488', color: '#fff', borderRadius: 2, padding: '0 3px', lineHeight: '1.4', whiteSpace: 'nowrap' }}>年金共済</span>}
+                        <td className="py-1 font-normal tabular-nums"
+                          style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}`, verticalAlign: 'middle' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2, overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                            {r.retirementIncome > 0 && <span style={{ fontSize: 7, background: GOLD,      color: '#fff', borderRadius: 2, padding: '1px 2px', lineHeight: 1, flexShrink: 0 }}>退職金</span>}
+                            {r.iDeCoIncome > 0       && <span style={{ fontSize: 7, background: NAVY,      color: '#fff', borderRadius: 2, padding: '1px 2px', lineHeight: 1, flexShrink: 0 }}>iDeCo</span>}
+                            {r.kyosaiSavingIncome > 0 && <span style={{ fontSize: 7, background: '#2563eb', color: '#fff', borderRadius: 2, padding: '1px 2px', lineHeight: 1, flexShrink: 0 }}>共済積立</span>}
+                            {r.kyosaiPensionIncome > 0 && <span style={{ fontSize: 7, background: '#0d9488', color: '#fff', borderRadius: 2, padding: '1px 2px', lineHeight: 1, flexShrink: 0 }}>年金共済</span>}
+                            <span style={{ flexShrink: 0 }}>{r.age}</span>
                           </div>
                         </td>
                         {/* 3. 総資産 */}
