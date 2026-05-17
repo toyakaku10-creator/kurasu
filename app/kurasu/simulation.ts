@@ -214,10 +214,8 @@ export function simulate(params: Params): YearRow[] {
     let retirementReinvest = 0;
     if (age === params.retirementAge) {
       retirementIncome = retirementNet;
-      if (params.reinvestRetirement) {
-        stocks += retirementIncome;
-        retirementReinvest = retirementIncome;
-      } else cash += retirementIncome;
+      if (!params.reinvestRetirement) cash += retirementIncome;
+      // stocks reinvest deferred to after dividend (step ④)
     }
 
     // iDeCo lump-sum payout
@@ -226,10 +224,8 @@ export function simulate(params: Params): YearRow[] {
     if (age === params.iDeCoStartReceiveAge) {
       const net = iDeCoLumpSumAfterTax(iDeCoFund, params.iDeCoYearsOfMembership);
       iDeCoIncome = net;
-      if (params.reinvestRetirement) {
-        stocks += net;
-        iDeCoReinvest = net;
-      } else cash += net;
+      if (!params.reinvestRetirement) cash += net;
+      // stocks reinvest deferred to after dividend (step ④)
       iDeCoFund = 0;
     }
 
@@ -252,12 +248,8 @@ export function simulate(params: Params): YearRow[] {
       // Saving: lump-sum payout
       if (kyosaiSavingFund > 0) {
         kyosaiSavingIncome = kyosaiSavingFund;
-        if (params.reinvestRetirement) {
-          stocks += kyosaiSavingFund;
-          kyosaiSavingReinvest = kyosaiSavingFund;
-        } else {
-          cash += kyosaiSavingFund;
-        }
+        if (!params.reinvestRetirement) cash += kyosaiSavingFund;
+        // stocks reinvest deferred to after dividend (step ④)
         kyosaiSavingFund = 0;
       }
     }
@@ -299,7 +291,8 @@ export function simulate(params: Params): YearRow[] {
 
     const isRetired = age >= params.retirementAge;
     if (!isRetired) {
-      // Pre-retirement: salary covers living expenses; compute dividend on current stocks, reinvest fully
+      // Pre-retirement: salary covers living expenses
+      // ③ Dividend computed on post-growth stock balance (no drawdown pre-retirement)
       // NISA cumulative: 現在値 + 経過年数×240万、上限1200万
       const nisaCumulative = Math.min(
         params.nisaCurrentAmount + yearsFromNow * 2_400_000,
@@ -310,14 +303,17 @@ export function simulate(params: Params): YearRow[] {
       dividendAfterTax = dividendGross * (nisaRatio + (1 - nisaRatio) * (1 - 0.20315));
       stocks += dividendAfterTax;
       dividendReinvest = dividendAfterTax;
+      // ④ Apply deferred reinvestments after dividend
+      if (params.reinvestRetirement) {
+        stocks += retirementIncome + iDeCoIncome + kyosaiSavingIncome;
+        retirementReinvest = retirementIncome;
+        iDeCoReinvest = iDeCoIncome;
+        kyosaiSavingReinvest = kyosaiSavingIncome;
+      }
     } else {
-      // Post-retirement: drawdown first based on non-dividend deficit, then compute dividend
+      // Post-retirement: ② drawdown first based on non-dividend deficit, ③ then compute dividend
       const balWithoutDiv = nonDivIncome - livingExpense;
-      if (balWithoutDiv >= 0) {
-        // Non-dividend income covers expenses; reinvest the surplus
-        stocks += balWithoutDiv;
-        surplusReinvest = balWithoutDiv;
-      } else {
+      if (balWithoutDiv < 0) {
         // Drawdown the shortfall (expense − non-dividend income)
         let deficit = -balWithoutDiv;
         // 1) Draw from cash first
@@ -344,7 +340,7 @@ export function simulate(params: Params): YearRow[] {
           goldDrawdown = fromGold;
         }
       }
-      // Dividend computed on post-drawdown stock balance; always reinvested post-retirement
+      // ③ Dividend computed on post-drawdown stock balance; always reinvested post-retirement
       const nisaCumulative = Math.min(
         params.nisaCurrentAmount + yearsFromNow * 2_400_000,
         12_000_000,
@@ -354,6 +350,18 @@ export function simulate(params: Params): YearRow[] {
       dividendAfterTax = dividendGross * (nisaRatio + (1 - nisaRatio) * (1 - 0.20315));
       stocks += dividendAfterTax;
       dividendReinvest = dividendAfterTax;
+      // ④ Apply deferred reinvestments after dividend
+      if (params.reinvestRetirement) {
+        stocks += retirementIncome + iDeCoIncome + kyosaiSavingIncome;
+        retirementReinvest = retirementIncome;
+        iDeCoReinvest = iDeCoIncome;
+        kyosaiSavingReinvest = kyosaiSavingIncome;
+      }
+      // ⑤ Surplus reinvest after dividend
+      if (balWithoutDiv >= 0) {
+        stocks += balWithoutDiv;
+        surplusReinvest = balWithoutDiv;
+      }
     }
 
     // FIRE check: does post-drawdown dividend cover living expense?
