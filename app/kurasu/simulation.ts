@@ -173,25 +173,9 @@ export function simulate(params: Params): YearRow[] {
     const yearsFromNow = age - params.currentAge;
     let livingExpense =
       params.annualLivingExpense * Math.pow(1 + params.inflationRate, yearsFromNow);
-
-    // Dividend (after tax, NISA-adjusted)
-    // NISA cumulative: 現在値 + 経過年数×240万、上限1200万
-    const nisaCumulative = Math.min(
-      params.nisaCurrentAmount + yearsFromNow * 2_400_000,
-      12_000_000,
-    );
-    const nisaRatio = stocks > 0 ? Math.min(1, nisaCumulative / stocks) : 0;
-    const dividendGross = stocks * params.stockDividendRate;
-    const dividendAfterTax =
-      dividendGross * (nisaRatio + (1 - nisaRatio) * (1 - 0.20315));
-
     if (params.livingExpenseDecline && age >= params.livingExpenseDeclineAge) {
       livingExpense *= 1 - params.livingExpenseDeclineRate;
     }
-
-    // FIRE check
-    const isFIREYear = !dividendFIREReached && dividendAfterTax >= livingExpense;
-    if (isFIREYear) dividendFIREReached = true;
 
     // One-time retirement income
     let retirementIncome = 0;
@@ -232,14 +216,13 @@ export function simulate(params: Params): YearRow[] {
       pensionBenefit = bGross * (1 - taxRatio);
     }
 
-    // Spendable income for balance
+    // Non-dividend spendable income
     const spendableRetirement = params.reinvestRetirement ? 0 : retirementIncome;
     const spendableIdeco = params.reinvestRetirement ? 0 : iDeCoIncome;
-    const spendableIncome =
-      dividendAfterTax + spendableRetirement + spendableIdeco + pensionPublic + pensionBenefit;
-    const balance = spendableIncome - livingExpense;
+    const nonDivIncome = spendableRetirement + spendableIdeco + pensionPublic + pensionBenefit;
 
-    // Asset draw / reinvest
+    // Asset draw / reinvest — dividend computed AFTER drawdown on post-drawdown stock balance
+    let dividendAfterTax = 0;
     let dividendReinvest = 0;
     let surplusReinvest = 0;
     let cashDrawdown = 0;
@@ -248,17 +231,27 @@ export function simulate(params: Params): YearRow[] {
 
     const isRetired = age >= params.retirementAge;
     if (!isRetired) {
-      // Pre-retirement: salary covers living expenses, reinvest dividends fully
+      // Pre-retirement: salary covers living expenses; compute dividend on current stocks, reinvest fully
+      // NISA cumulative: 現在値 + 経過年数×240万、上限1200万
+      const nisaCumulative = Math.min(
+        params.nisaCurrentAmount + yearsFromNow * 2_400_000,
+        12_000_000,
+      );
+      const nisaRatio = stocks > 0 ? Math.min(1, nisaCumulative / stocks) : 0;
+      const dividendGross = stocks * params.stockDividendRate;
+      dividendAfterTax = dividendGross * (nisaRatio + (1 - nisaRatio) * (1 - 0.20315));
       stocks += dividendAfterTax;
       dividendReinvest = dividendAfterTax;
     } else {
-      // Post-retirement: dividends are income; reinvest surplus or draw down assets
-      if (balance > 0) {
-        stocks += balance;
-        surplusReinvest = balance;
+      // Post-retirement: drawdown first based on non-dividend deficit, then compute dividend
+      const balWithoutDiv = nonDivIncome - livingExpense;
+      if (balWithoutDiv >= 0) {
+        // Non-dividend income covers expenses; reinvest the surplus
+        stocks += balWithoutDiv;
+        surplusReinvest = balWithoutDiv;
       } else {
-        // Drawdown = income shortfall only (livingExpense - dividend - pension)
-        let deficit = -balance;
+        // Drawdown the shortfall (expense − non-dividend income)
+        let deficit = -balWithoutDiv;
         // 1) Draw from cash first
         if (cash >= deficit) {
           cash -= deficit;
@@ -283,7 +276,23 @@ export function simulate(params: Params): YearRow[] {
           stockDrawdown = fromStocks;
         }
       }
+      // Dividend computed on post-drawdown stock balance; always reinvested post-retirement
+      const nisaCumulative = Math.min(
+        params.nisaCurrentAmount + yearsFromNow * 2_400_000,
+        12_000_000,
+      );
+      const nisaRatio = stocks > 0 ? Math.min(1, nisaCumulative / stocks) : 0;
+      const dividendGross = stocks * params.stockDividendRate;
+      dividendAfterTax = dividendGross * (nisaRatio + (1 - nisaRatio) * (1 - 0.20315));
+      stocks += dividendAfterTax;
+      dividendReinvest = dividendAfterTax;
     }
+
+    // FIRE check: does post-drawdown dividend cover living expense?
+    const isFIREYear = !dividendFIREReached && dividendAfterTax >= livingExpense;
+    if (isFIREYear) dividendFIREReached = true;
+
+    const balance = dividendAfterTax + nonDivIncome - livingExpense;
 
     const totalAssets =
       Math.max(0, stocks) + gold + Math.max(0, cash);

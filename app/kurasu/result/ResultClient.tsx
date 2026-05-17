@@ -74,9 +74,10 @@ function saveActual(d: ActualData) {
 }
 
 // ── Actual input modal ─────────────────────────
-function ActualModal({ year, entry, onSave, onDelete, onClose }: {
+function ActualModal({ year, entry, planRow, onSave, onDelete, onClose }: {
   year: number;
   entry?: ActualEntry;
+  planRow?: YearRow;
   onSave: (e: ActualEntry) => void;
   onDelete: () => void;
   onClose: () => void;
@@ -85,10 +86,13 @@ function ActualModal({ year, entry, onSave, onDelete, onClose }: {
   const [div,   setDiv]   = useState(entry?.dividend?.toString()   ?? '');
   const [exp,   setExp]   = useState(entry?.expense?.toString()    ?? '');
 
+  const planM = (v?: number) =>
+    v != null && v > 0 ? `${Math.round(v / 10_000).toLocaleString()}万` : '—';
+
   const fields = [
-    { label: '総資産（万円）', value: asset, set: setAsset },
-    { label: '配当金（万円）', value: div,   set: setDiv   },
-    { label: '生活費（万円）', value: exp,   set: setExp   },
+    { label: '総資産（万円）', value: asset, set: setAsset, plan: planM(planRow?.totalAssets)    },
+    { label: '配当金（万円）', value: div,   set: setDiv,   plan: planM(planRow?.dividendIncome) },
+    { label: '生活費（万円）', value: exp,   set: setExp,   plan: planM(planRow?.livingExpense)  },
   ];
 
   return (
@@ -101,9 +105,12 @@ function ActualModal({ year, entry, onSave, onDelete, onClose }: {
         onClick={e => e.stopPropagation()}
       >
         <div style={{ fontSize: '0.9rem', fontWeight: 700, color: NAVY, marginBottom: 16 }}>{year}年 実績入力</div>
-        {fields.map(({ label, value, set }) => (
+        {fields.map(({ label, value, set, plan }) => (
           <div key={label} style={{ marginBottom: 12 }}>
-            <label style={{ fontSize: '0.7rem', color: SUB, display: 'block', marginBottom: 4 }}>{label}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+              <label style={{ fontSize: '0.7rem', color: SUB }}>{label}</label>
+              <span style={{ fontSize: '0.65rem', color: SUB }}>計画：{plan}</span>
+            </div>
             <input
               type="number" inputMode="numeric" value={value}
               onChange={e => set(e.target.value)} placeholder="未入力"
@@ -395,20 +402,20 @@ export default function ResultClient() {
                   <col style={{ width: '10%' }} />  {/* 西暦   */}
                   <col style={{ width: '6%'  }} />  {/* 齢     */}
                   <col style={{ width: '18%' }} />  {/* 総資産 */}
-                  <col style={{ width: '14%' }} />  {/* 配当   */}
-                  <col style={{ width: '13%' }} />  {/* 年金   */}
+                  <col style={{ width: '12%' }} />  {/* 配当   */}
+                  <col style={{ width: '11%' }} />  {/* 年金   */}
                   <col style={{ width: '14%' }} />  {/* 支出   */}
-                  <col style={{ width: '13%' }} />  {/* 収支   */}
+                  <col style={{ width: '16%' }} />  {/* 収支   */}
                 </colgroup>
                 <thead>
                   <tr style={{ position: 'sticky', top: 0, zIndex: 1, background: CARD, boxShadow: `0 1px 0 ${BORDER}` }}>
                     {([
                       { label: '西暦',    align: 'left',  pl: '10px', pr: '2px',  bold: false, divider: false },
                       { label: '齢',      align: 'right', pl: '2px',  pr: '4px',  bold: false, divider: true  },
-                      { label: '総資産↓', align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
-                      { label: '配当↓',  align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
+                      { label: '総資産',  align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
+                      { label: '配当',    align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
                       { label: '年金',    align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
-                      { label: '支出↓',  align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
+                      { label: '支出',    align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
                       { label: '収支',    align: 'right', pl: '4px',  pr: '14px', bold: true,  divider: false },
                     ] as const).map(({ label, align, pl, pr, bold, divider }) => (
                       <th key={label}
@@ -434,9 +441,9 @@ export default function ResultClient() {
                     const dispDivM   = act?.dividend  != null ? act.dividend  : Math.round(r.dividendIncome / 10_000);
                     const dispExpM   = act?.expense   != null ? act.expense   : Math.round(r.livingExpense  / 10_000);
                     const dispPenM   = Math.round(pensionIncome / 10_000);
-                    // balance: use actual values if any actual entered, else plan
+                    // balance: use actual values if any actual entered, else plan (no rounding accumulation)
                     const balSrc = hasActual ? dispDivM + dispPenM - dispExpM
-                      : Math.round(r.dividendIncome / 10_000) + dispPenM - Math.round(r.livingExpense / 10_000);
+                      : Math.round(r.balance / 10_000);
                     // start row has all zeros — show '—'; pre-retirement plan rows also show '—' for income
                     const showPre = (preRetirement || isStartRow) && !hasActual;
 
@@ -527,6 +534,7 @@ export default function ResultClient() {
         <ActualModal
           year={modalYear}
           entry={actuals[String(modalYear)]}
+          planRow={rows.find(r => r.year === modalYear)}
           onSave={(e) => handleSaveActual(modalYear, e)}
           onDelete={() => handleDeleteActual(modalYear)}
           onClose={() => setModalYear(null)}
