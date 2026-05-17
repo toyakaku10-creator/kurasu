@@ -167,13 +167,15 @@ function CustomTooltip({ active, payload, label }: TipProps) {
 // ── Total-assets breakdown cell ───────────────
 const TOOLTIP_W = 220;
 
-function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null }) {
+function TotalAssetsCell({ r, yoyDiff, isRetired }: { r: YearRow; yoyDiff: number | null; isRetired: boolean }) {
   const [show, setShow] = useState(false);
   const [tipPos, setTipPos] = useState({ top: 0, left: 0, above: true });
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  // 前年比 = 株式・金評価増 + 収支 + 退職金再投資 + iDeCo再投資
-  const yoy = r.assetAppreciation + r.balance + r.retirementReinvest + r.iDeCoReinvest;
+  // 退職前: 評価増 + 配当再投資  /  退職後: 評価増 + 収支 + 退職金 + iDeCo
+  const yoy = isRetired
+    ? r.assetAppreciation + r.balance + r.retirementReinvest + r.iDeCoReinvest
+    : r.assetAppreciation + r.dividendReinvest;
 
   const openTooltip = () => {
     if (!triggerRef.current) return;
@@ -230,9 +232,15 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
           {yoyDiff !== null && (
             <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 6 }}>
               {r.assetAppreciation > 0 && row('株式・金評価増', r.assetAppreciation)}
-              {row('収支', r.balance)}
-              {r.retirementReinvest > 0 && row('退職金再投資', r.retirementReinvest)}
-              {r.iDeCoReinvest > 0 && row('iDeCo再投資', r.iDeCoReinvest)}
+              {isRetired ? (
+                <>
+                  {row('収支', r.balance)}
+                  {r.retirementReinvest > 0 && row('退職金再投資', r.retirementReinvest)}
+                  {r.iDeCoReinvest > 0 && row('iDeCo再投資', r.iDeCoReinvest)}
+                </>
+              ) : (
+                r.dividendReinvest > 0 && row('配当再投資', r.dividendReinvest)
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: '0.65rem', marginTop: 4, paddingTop: 4, borderTop: `1px solid ${BORDER}` }}>
                 <span style={{ color: NAVY, fontWeight: 600 }}>前年比</span>
                 <span style={{ fontFamily: 'monospace', fontWeight: 600, color: yoy >= 0 ? GREEN : RED }}>
@@ -457,7 +465,7 @@ export default function ResultClient() {
                           {hasActual && act?.totalAsset != null ? (
                             <span style={{ color: GOLD, fontWeight: 600 }}>{act.totalAsset.toLocaleString()}</span>
                           ) : (
-                            <TotalAssetsCell r={r} yoyDiff={yoyDiff} />
+                            <TotalAssetsCell r={r} yoyDiff={yoyDiff} isRetired={!preRetirement} />
                           )}
                         </td>
                         {/* 4. 配当 */}
