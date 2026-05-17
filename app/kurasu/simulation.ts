@@ -271,18 +271,18 @@ export function simulate(params: Params): YearRow[] {
           deficit -= cash;
           cash = 0;
         }
-        // 2) Draw from stocks next
-        if (deficit > 0) {
-          const fromStocks = Math.min(stocks, deficit);
-          stocks -= fromStocks;
-          stockDrawdown = fromStocks;
-          deficit -= fromStocks;
-        }
-        // 3) Draw from gold last
+        // 2) Draw from gold next (preserve dividend-generating stocks as long as possible)
         if (deficit > 0) {
           const fromGold = Math.min(gold, deficit);
           gold -= fromGold;
           goldDrawdown = fromGold;
+          deficit -= fromGold;
+        }
+        // 3) Draw from stocks last
+        if (deficit > 0) {
+          const fromStocks = Math.min(stocks, deficit);
+          stocks -= fromStocks;
+          stockDrawdown = fromStocks;
         }
       }
     }
