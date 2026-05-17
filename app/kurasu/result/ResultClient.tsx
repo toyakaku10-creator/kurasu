@@ -176,6 +176,9 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
   if (r.cashDrawdown > 0)            items.push({ label: '生活費補填',     value: -r.cashDrawdown });
   if (r.stockDrawdown > 0)           items.push({ label: '取り崩し',       value: -r.stockDrawdown });
 
+  // 前年比 = sum of breakdown items (guarantees display matches breakdown total)
+  const itemsDiff = items.reduce((s, { value }) => s + value, 0);
+
   const openTooltip = () => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
@@ -221,9 +224,9 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
           <div style={{ fontSize: '0.65rem', fontWeight: 700, color: NAVY, marginBottom: 3 }}>
             総資産 {man(r.totalAssets)}
           </div>
-          {yoyDiff !== null && (
-            <div style={{ fontSize: '0.65rem', marginBottom: 8, color: yoyDiff >= 0 ? GREEN : RED }}>
-              前年比 {yoyDiff >= 0 ? '+' : ''}{man(yoyDiff)}
+          {yoyDiff !== null && items.length > 0 && (
+            <div style={{ fontSize: '0.65rem', marginBottom: 8, color: itemsDiff >= 0 ? GREEN : RED }}>
+              前年比 {itemsDiff >= 0 ? '+' : ''}{man(itemsDiff)}
             </div>
           )}
           {items.length > 0 && (
