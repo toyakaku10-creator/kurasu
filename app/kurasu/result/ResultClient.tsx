@@ -402,8 +402,8 @@ export default function ResultClient() {
                   <col style={{ width: '10%' }} />  {/* 西暦   */}
                   <col style={{ width: '14%' }} />  {/* 齢     */}
                   <col style={{ width: '16%' }} />  {/* 総資産 */}
-                  <col style={{ width: '12%' }} />  {/* 配当   */}
-                  <col style={{ width: '11%' }} />  {/* 年金   */}
+                  <col style={{ width: '11%' }} />  {/* 配当   */}
+                  <col style={{ width: '10%' }} />  {/* 年金   */}
                   <col style={{ width: '13%' }} />  {/* 支出   */}
                   <col style={{ width: '11%' }} />  {/* 収支   */}
                 </colgroup>
@@ -413,8 +413,8 @@ export default function ResultClient() {
                       { label: '西暦',    align: 'left',  pl: '10px', pr: '2px',  bold: false, divider: false },
                       { label: '齢',      align: 'right', pl: '2px',  pr: '4px',  bold: false, divider: true  },
                       { label: '総資産',  align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
-                      { label: '配当',    align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
-                      { label: '年金',    align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
+                      { label: '配当',    align: 'right', pl: '2px',  pr: '2px',  bold: true,  divider: false },
+                      { label: '年金',    align: 'right', pl: '2px',  pr: '2px',  bold: true,  divider: false },
                       { label: '支出',    align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
                       { label: '収支',    align: 'right', pl: '4px',  pr: '14px', bold: true,  divider: false },
                     ] as const).map(({ label, align, pl, pr, bold, divider }) => (
@@ -482,13 +482,13 @@ export default function ResultClient() {
                           )}
                         </td>
                         {/* 4. 配当 */}
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px',
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '2px', paddingRight: '2px',
                           color: hasActual && act?.dividend != null ? GOLD : showPre ? SUB : NAVY,
                           fontWeight: hasActual && act?.dividend != null ? 600 : undefined }}>
                           {showPre ? '—' : dispDivM === 0 ? '—' : dispDivM.toLocaleString()}
                         </td>
                         {/* 5. 年金 */}
-                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>
+                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '2px', paddingRight: '2px' }}>
                           {dispPenM === 0 ? '—' : dispPenM.toLocaleString()}
                         </td>
                         {/* 6. 支出 */}
