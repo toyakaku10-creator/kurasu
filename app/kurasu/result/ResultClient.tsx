@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, Banknote, PiggyBank, Wallet, CalendarClock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
@@ -389,18 +389,11 @@ export default function ResultClient() {
                 年間別推移
                 <span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円・12月31日時点・行をタップして実績を入力）</span>
               </h2>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
-                {([
-                  { label: '退職金', color: GOLD },
-                  { label: 'iDeCo',  color: NAVY },
-                  { label: '共済積立', color: '#2563eb' },
-                  { label: '年金共済', color: '#0d9488' },
-                ] as const).map(({ label, color }) => (
-                  <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.6rem', color: SUB }}>
-                    <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 2, background: color, flexShrink: 0 }} />
-                    {label}
-                  </span>
-                ))}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4, fontSize: '0.6rem', color: SUB }}>
+                <span><Banknote size={9} color={GOLD} style={{ display: 'inline', verticalAlign: 'middle' }} /> 退職金</span>
+                <span><PiggyBank size={9} color={GOLD} style={{ display: 'inline', verticalAlign: 'middle' }} /> iDeCo</span>
+                <span><Wallet size={9} color={GOLD} style={{ display: 'inline', verticalAlign: 'middle' }} /> 共済積立</span>
+                <span><CalendarClock size={9} color={GOLD} style={{ display: 'inline', verticalAlign: 'middle' }} /> 年金共済</span>
               </div>
             </div>
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
@@ -472,10 +465,10 @@ export default function ResultClient() {
                         <td className="py-1 font-normal tabular-nums"
                           style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}`, verticalAlign: 'middle' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2, overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                            {r.retirementIncome > 0 && <span style={{ fontSize: 7, background: GOLD,      color: '#fff', borderRadius: 2, padding: '1px 2px', lineHeight: 1, flexShrink: 0 }}>退職金</span>}
-                            {r.iDeCoIncome > 0       && <span style={{ fontSize: 7, background: NAVY,      color: '#fff', borderRadius: 2, padding: '1px 2px', lineHeight: 1, flexShrink: 0 }}>iDeCo</span>}
-                            {r.kyosaiSavingIncome > 0 && <span style={{ fontSize: 7, background: '#2563eb', color: '#fff', borderRadius: 2, padding: '1px 2px', lineHeight: 1, flexShrink: 0 }}>共済積立</span>}
-                            {r.kyosaiPensionIncome > 0 && <span style={{ fontSize: 7, background: '#0d9488', color: '#fff', borderRadius: 2, padding: '1px 2px', lineHeight: 1, flexShrink: 0 }}>年金共済</span>}
+                            {r.retirementIncome > 0   && <Banknote     size={9} color={GOLD} style={{ flexShrink: 0 }} />}
+                            {r.iDeCoIncome > 0        && <PiggyBank    size={9} color={GOLD} style={{ flexShrink: 0 }} />}
+                            {r.kyosaiSavingIncome > 0  && <Wallet       size={9} color={GOLD} style={{ flexShrink: 0 }} />}
+                            {r.kyosaiPensionIncome > 0 && <CalendarClock size={9} color={GOLD} style={{ flexShrink: 0 }} />}
                             <span style={{ flexShrink: 0 }}>{r.age}</span>
                           </div>
                         </td>
