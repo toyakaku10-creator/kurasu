@@ -172,36 +172,31 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
   const [tipPos, setTipPos] = useState({ top: 0, left: 0, above: true });
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  const items: Array<{ label: string; value: number }> = [];
-  if (r.assetAppreciation > 0)       items.push({ label: '株式・金評価増', value:  r.assetAppreciation });
-  if (r.dividendReinvest > 0)        items.push({ label: '配当再投資',     value:  r.dividendReinvest });
-  if (r.retirementReinvest > 0)      items.push({ label: '退職金再投資',   value:  r.retirementReinvest });
-  else if (r.retirementIncome > 0)   items.push({ label: '退職金受取',     value:  r.retirementIncome });
-  if (r.iDeCoReinvest > 0)           items.push({ label: 'iDeCo再投資',    value:  r.iDeCoReinvest });
-  else if (r.iDeCoIncome > 0)        items.push({ label: 'iDeCo受取',      value:  r.iDeCoIncome });
-  if (r.surplusReinvest > 0)         items.push({ label: '余剰再投資',     value:  r.surplusReinvest });
-  if (r.cashDrawdown > 0)            items.push({ label: '現金取り崩し',   value: -r.cashDrawdown });
-  if (r.stockDrawdown > 0)           items.push({ label: '株式取り崩し',   value: -r.stockDrawdown });
-  if (r.goldDrawdown > 0)            items.push({ label: '金取り崩し',     value: -r.goldDrawdown });
-
-  // 前年比 = sum of breakdown items (guarantees display matches breakdown total)
-  const itemsDiff = items.reduce((s, { value }) => s + value, 0);
+  // 前年比 = 株式・金評価増 + 収支 + 退職金再投資 + iDeCo再投資
+  const yoy = r.assetAppreciation + r.balance + r.retirementReinvest + r.iDeCoReinvest;
 
   const openTooltip = () => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    // Decide above/below based on available space (estimate tooltip height ~180px)
     const above = rect.top > 200 || rect.top > vh - rect.bottom;
     const top = above ? rect.top - 6 : rect.bottom + 6;
-    // Horizontal: right-align to trigger, clamp to viewport edges
     let left = rect.right - TOOLTIP_W;
     if (left < 8) left = 8;
     if (left + TOOLTIP_W > vw - 8) left = vw - TOOLTIP_W - 8;
     setTipPos({ top, left, above });
     setShow(true);
   };
+
+  const row = (label: string, value: number) => (
+    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: '0.65rem', marginBottom: 3 }}>
+      <span style={{ color: SUB }}>{label}</span>
+      <span style={{ fontFamily: 'monospace', color: value >= 0 ? GREEN : RED }}>
+        {value >= 0 ? '+' : ''}{man(value)}
+      </span>
+    </div>
+  );
 
   return (
     <div
@@ -229,31 +224,21 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
           zIndex: 9999,
           textAlign: 'left',
         }}>
-          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: NAVY, marginBottom: 3 }}>
+          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: NAVY, marginBottom: 6 }}>
             総資産 {man(r.totalAssets)}
           </div>
-          {yoyDiff !== null && items.length > 0 && (
-            <div style={{ fontSize: '0.65rem', marginBottom: 8, color: itemsDiff >= 0 ? GREEN : RED }}>
-              前年比 {itemsDiff >= 0 ? '+' : ''}{man(itemsDiff)}
-            </div>
-          )}
-          {items.length > 0 && (
+          {yoyDiff !== null && (
             <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 6 }}>
-              <div style={{ fontSize: '0.6rem', color: SUB, marginBottom: 4 }}>内訳</div>
-              {items.map(({ label, value }) => (
-                <div key={label} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: 12,
-                  fontSize: '0.65rem',
-                  marginBottom: 3,
-                }}>
-                  <span style={{ color: SUB }}>{label}</span>
-                  <span style={{ fontFamily: 'monospace', color: value >= 0 ? GREEN : RED }}>
-                    {value >= 0 ? '+' : ''}{man(value)}
-                  </span>
-                </div>
-              ))}
+              {r.assetAppreciation > 0 && row('株式・金評価増', r.assetAppreciation)}
+              {row('収支', r.balance)}
+              {r.retirementReinvest > 0 && row('退職金再投資', r.retirementReinvest)}
+              {r.iDeCoReinvest > 0 && row('iDeCo再投資', r.iDeCoReinvest)}
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: '0.65rem', marginTop: 4, paddingTop: 4, borderTop: `1px solid ${BORDER}` }}>
+                <span style={{ color: NAVY, fontWeight: 600 }}>前年比</span>
+                <span style={{ fontFamily: 'monospace', fontWeight: 600, color: yoy >= 0 ? GREEN : RED }}>
+                  {yoy >= 0 ? '+' : ''}{man(yoy)}
+                </span>
+              </div>
             </div>
           )}
         </div>
