@@ -382,7 +382,7 @@ export default function ResultClient() {
             <div className="px-5 pt-5 pb-3">
               <h2 className="text-sm font-bold" style={{ color: NAVY }}>
                 年間別推移
-                <span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円・行をタップして実績を入力）</span>
+                <span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円・12月31日時点・行をタップして実績を入力）</span>
               </h2>
             </div>
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
@@ -417,6 +417,50 @@ export default function ResultClient() {
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Previous year row — actual entry only, no plan values */}
+                  {(() => {
+                    const prevYear = params.currentYear - 1;
+                    const prevAge  = params.currentAge  - 1;
+                    const act      = actuals[String(prevYear)];
+                    const hasActual = !!act;
+                    const dispDivM = act?.dividend  != null ? act.dividend  : null;
+                    const dispExpM = act?.expense   != null ? act.expense   : null;
+                    const dispBalM = dispDivM != null && dispExpM != null ? dispDivM - dispExpM : null;
+                    return (
+                      <tr key="prev"
+                        onClick={() => setModalYear(prevYear)}
+                        style={{ borderBottom: `1px solid ${BORDER}`, background: hasActual ? `${GOLD}18` : undefined, cursor: 'pointer' }}>
+                        <td className="py-1 font-normal tabular-nums"
+                          style={{ color: SUB, paddingLeft: hasActual ? '7px' : '10px', paddingRight: '2px',
+                            borderLeft: hasActual ? `3px solid ${GOLD}` : '3px solid transparent' }}>
+                          {prevYear}
+                        </td>
+                        <td className="py-1 text-right font-normal tabular-nums"
+                          style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}` }}>
+                          {prevAge}
+                        </td>
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px' }}
+                          onClick={e => e.stopPropagation()}>
+                          {act?.totalAsset != null
+                            ? <span style={{ color: GOLD, fontWeight: 600 }}>{act.totalAsset.toLocaleString()}</span>
+                            : <span style={{ color: SUB }}>—</span>}
+                        </td>
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px',
+                          color: dispDivM != null ? GOLD : SUB, fontWeight: dispDivM != null ? 600 : undefined }}>
+                          {dispDivM != null ? dispDivM.toLocaleString() : '—'}
+                        </td>
+                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '4px', paddingRight: '4px' }}>—</td>
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px',
+                          color: dispExpM != null ? GOLD : SUB, fontWeight: dispExpM != null ? 600 : undefined }}>
+                          {dispExpM != null ? dispExpM.toLocaleString() : '—'}
+                        </td>
+                        <td className="py-1 text-right tabular-nums font-semibold" style={{ paddingLeft: '4px', paddingRight: '14px',
+                          color: dispBalM == null ? SUB : dispBalM >= 0 ? GREEN : RED }}>
+                          {dispBalM == null ? '—' : dispBalM === 0 ? '—' : (dispBalM > 0 ? '+' : '') + dispBalM.toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })()}
                   {rows.map((r, i) => {
                     const preRetirement = r.age < params.retirementAge;
                     const pensionIncome = r.pensionPublic + r.pensionBenefit;
