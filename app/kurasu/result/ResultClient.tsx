@@ -173,8 +173,9 @@ function TotalAssetsCell({ r, yoyDiff }: { r: YearRow; yoyDiff: number | null })
   if (r.iDeCoReinvest > 0)           items.push({ label: 'iDeCo再投資',    value:  r.iDeCoReinvest });
   else if (r.iDeCoIncome > 0)        items.push({ label: 'iDeCo受取',      value:  r.iDeCoIncome });
   if (r.surplusReinvest > 0)         items.push({ label: '余剰再投資',     value:  r.surplusReinvest });
-  if (r.cashDrawdown > 0)            items.push({ label: '生活費補填',     value: -r.cashDrawdown });
-  if (r.stockDrawdown > 0)           items.push({ label: '取り崩し',       value: -r.stockDrawdown });
+  if (r.cashDrawdown > 0)            items.push({ label: '現金取り崩し',   value: -r.cashDrawdown });
+  if (r.stockDrawdown > 0)           items.push({ label: '株式取り崩し',   value: -r.stockDrawdown });
+  if (r.goldDrawdown > 0)            items.push({ label: '金取り崩し',     value: -r.goldDrawdown });
 
   // 前年比 = sum of breakdown items (guarantees display matches breakdown total)
   const itemsDiff = items.reduce((s, { value }) => s + value, 0);

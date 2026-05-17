@@ -62,6 +62,7 @@ export interface YearRow {
   surplusReinvest: number;
   cashDrawdown: number;
   stockDrawdown: number;
+  goldDrawdown: number;
 }
 
 export const DEFAULT_PARAMS: Params = {
@@ -150,7 +151,7 @@ export function simulate(params: Params): YearRow[] {
     // First row (previous year-end): push raw input values as starting point, no calculations
     if (age === params.currentAge - 1) {
       const initTotal = params.stockAmount + params.goldAmount + params.cashAmount;
-      rows.push({ age, year, stocks: params.stockAmount, gold: params.goldAmount, cash: params.cashAmount, iDeCoFund: 0, totalAssets: initTotal, dividendIncome: 0, iDeCoIncome: 0, retirementIncome: 0, pensionPublic: 0, pensionBenefit: 0, totalIncome: 0, livingExpense: 0, balance: 0, isFIREYear: false, fireBadge: false, assetAppreciation: 0, dividendReinvest: 0, retirementReinvest: 0, iDeCoReinvest: 0, surplusReinvest: 0, cashDrawdown: 0, stockDrawdown: 0 });
+      rows.push({ age, year, stocks: params.stockAmount, gold: params.goldAmount, cash: params.cashAmount, iDeCoFund: 0, totalAssets: initTotal, dividendIncome: 0, iDeCoIncome: 0, retirementIncome: 0, pensionPublic: 0, pensionBenefit: 0, totalIncome: 0, livingExpense: 0, balance: 0, isFIREYear: false, fireBadge: false, assetAppreciation: 0, dividendReinvest: 0, retirementReinvest: 0, iDeCoReinvest: 0, surplusReinvest: 0, cashDrawdown: 0, stockDrawdown: 0, goldDrawdown: 0 });
       continue;
     }
 
@@ -243,6 +244,7 @@ export function simulate(params: Params): YearRow[] {
     let surplusReinvest = 0;
     let cashDrawdown = 0;
     let stockDrawdown = 0;
+    let goldDrawdown = 0;
 
     const isRetired = age >= params.retirementAge;
     if (!isRetired) {
@@ -255,16 +257,29 @@ export function simulate(params: Params): YearRow[] {
         stocks += balance;
         surplusReinvest = balance;
       } else {
-        const deficit = -balance;
+        let deficit = -balance;
+        // 1) Draw from cash first
         if (cash >= deficit) {
           cash -= deficit;
           cashDrawdown = deficit;
+          deficit = 0;
         } else {
-          const remaining = deficit - cash;
           cashDrawdown = cash;
+          deficit -= cash;
           cash = 0;
-          stocks = Math.max(0, stocks - remaining);
-          stockDrawdown = remaining;
+        }
+        // 2) Draw from stocks next
+        if (deficit > 0) {
+          const fromStocks = Math.min(stocks, deficit);
+          stocks -= fromStocks;
+          stockDrawdown = fromStocks;
+          deficit -= fromStocks;
+        }
+        // 3) Draw from gold last
+        if (deficit > 0) {
+          const fromGold = Math.min(gold, deficit);
+          gold -= fromGold;
+          goldDrawdown = fromGold;
         }
       }
     }
@@ -299,6 +314,7 @@ export function simulate(params: Params): YearRow[] {
       surplusReinvest,
       cashDrawdown,
       stockDrawdown,
+      goldDrawdown,
     });
   }
 
