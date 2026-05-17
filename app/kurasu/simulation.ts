@@ -18,6 +18,7 @@ export interface Params {
   livingExpenseDeclineAge: number;
   livingExpenseDeclineRate: number;
   // iDeCo
+  iDeCoCurrentAmount: number;
   iDeCoMonthly: number;
   iDeCoMonthly2027: number;
   iDeCoReturn: number;
@@ -80,6 +81,7 @@ export const DEFAULT_PARAMS: Params = {
   livingExpenseDecline: true,
   livingExpenseDeclineAge: 70,
   livingExpenseDeclineRate: 0.15,
+  iDeCoCurrentAmount: 3_300_000,
   iDeCoMonthly: 20_000,
   iDeCoMonthly2027: 30_000,
   iDeCoReturn: 0.04,
@@ -140,7 +142,7 @@ export function simulate(params: Params): YearRow[] {
   let stocks = params.stockAmount;
   let gold = params.goldAmount;
   let cash = params.cashAmount;
-  let iDeCoFund = 0;
+  let iDeCoFund = params.iDeCoCurrentAmount;
   let dividendFIREReached = false;
 
   const retirementNet = retirementAfterTax(params.retirementPayment, params.yearsOfService);

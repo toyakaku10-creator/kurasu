@@ -279,6 +279,10 @@ export default function InputClient() {
           </Sec>
 
           <Sec title="iDeCo" icon={<Building2 size={15} />} defaultOpen={false}>
+            <Full>
+              <Slider label="現在のiDeCo残高" value={params.iDeCoCurrentAmount}
+                onChange={(v) => set('iDeCoCurrentAmount', v)} min={0} max={10_000_000} step={100_000} display={yen} />
+            </Full>
             <Slider label="月額掛金（〜2026年）" value={params.iDeCoMonthly}
               onChange={(v) => set('iDeCoMonthly', v)} min={0} max={68_000} step={1_000} display={yenM} />
             <Slider label="月額掛金（2027年以降）" value={params.iDeCoMonthly2027}
