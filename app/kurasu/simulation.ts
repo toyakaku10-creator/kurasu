@@ -65,8 +65,8 @@ export interface YearRow {
 }
 
 export const DEFAULT_PARAMS: Params = {
-  currentAge: 51,
-  currentYear: 2026,
+  currentAge: 50,
+  currentYear: 2025,
   stockAmount: 15_000_000,
   stockGrowthRate: 0.06,
   stockDividendRate: 0.038,
