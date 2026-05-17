@@ -25,6 +25,14 @@ export interface Params {
   iDeCoEndAge: number;
   iDeCoStartReceiveAge: number;
   iDeCoYearsOfMembership: number;
+  // Kyosai pension (年金共済) — 60歳から10年均等受取
+  kyosaiPensionAmount: number;
+  kyosaiPensionMonthly: number;
+  kyosaiPensionReturn: number;
+  // Kyosai saving (共済積立) — 60歳一括受取
+  kyosaiSavingAmount: number;
+  kyosaiSavingMonthly: number;
+  kyosaiSavingReturn: number;
   // Retirement
   retirementAge: number;
   retirementPayment: number;
@@ -64,6 +72,10 @@ export interface YearRow {
   cashDrawdown: number;
   stockDrawdown: number;
   goldDrawdown: number;
+  kyosaiPensionIncome: number;
+  kyosaiSavingIncome: number;
+  kyosaiPensionReinvest: number;
+  kyosaiSavingReinvest: number;
 }
 
 export const DEFAULT_PARAMS: Params = {
@@ -88,6 +100,12 @@ export const DEFAULT_PARAMS: Params = {
   iDeCoEndAge: 60,
   iDeCoStartReceiveAge: 65,
   iDeCoYearsOfMembership: 14,
+  kyosaiPensionAmount: 0,
+  kyosaiPensionMonthly: 0,
+  kyosaiPensionReturn: 0.02,
+  kyosaiSavingAmount: 0,
+  kyosaiSavingMonthly: 0,
+  kyosaiSavingReturn: 0.02,
   retirementAge: 60,
   retirementPayment: 21_000_000,
   yearsOfService: 38,
@@ -143,7 +161,19 @@ export function simulate(params: Params): YearRow[] {
   let gold = params.goldAmount;
   let cash = params.cashAmount;
   let iDeCoFund = params.iDeCoCurrentAmount;
+  let kyosaiPensionFund = params.kyosaiPensionAmount;
+  let kyosaiSavingFund = params.kyosaiSavingAmount;
+  let kyosaiPensionAnnual = 0;
   let dividendFIREReached = false;
+
+  // Pre-compute kyosai pension annual if simulation starts after age 60
+  // (loop won't reach age 60 to compute it in-place)
+  if (params.currentAge > 60) {
+    const paidYears = Math.min(10, params.currentAge - 60);
+    const remaining = Math.max(1, 10 - paidYears);
+    kyosaiPensionAnnual = kyosaiPensionFund / remaining;
+    kyosaiSavingFund = 0; // lump sum already paid at 60
+  }
 
   const retirementNet = retirementAfterTax(params.retirementPayment, params.yearsOfService);
 
@@ -153,7 +183,7 @@ export function simulate(params: Params): YearRow[] {
     // First row (previous year-end): push raw input values as starting point, no calculations
     if (age === params.currentAge - 1) {
       const initTotal = params.stockAmount + params.goldAmount + params.cashAmount;
-      rows.push({ age, year, stocks: params.stockAmount, gold: params.goldAmount, cash: params.cashAmount, iDeCoFund: 0, totalAssets: initTotal, dividendIncome: 0, iDeCoIncome: 0, retirementIncome: 0, pensionPublic: 0, pensionBenefit: 0, totalIncome: 0, livingExpense: 0, balance: 0, isFIREYear: false, fireBadge: false, assetAppreciation: 0, dividendReinvest: 0, retirementReinvest: 0, iDeCoReinvest: 0, surplusReinvest: 0, cashDrawdown: 0, stockDrawdown: 0, goldDrawdown: 0 });
+      rows.push({ age, year, stocks: params.stockAmount, gold: params.goldAmount, cash: params.cashAmount, iDeCoFund: 0, totalAssets: initTotal, dividendIncome: 0, iDeCoIncome: 0, retirementIncome: 0, pensionPublic: 0, pensionBenefit: 0, totalIncome: 0, livingExpense: 0, balance: 0, isFIREYear: false, fireBadge: false, assetAppreciation: 0, dividendReinvest: 0, retirementReinvest: 0, iDeCoReinvest: 0, surplusReinvest: 0, cashDrawdown: 0, stockDrawdown: 0, goldDrawdown: 0, kyosaiPensionIncome: 0, kyosaiSavingIncome: 0, kyosaiPensionReinvest: 0, kyosaiSavingReinvest: 0 });
       continue;
     }
 
@@ -203,6 +233,44 @@ export function simulate(params: Params): YearRow[] {
       iDeCoFund = 0;
     }
 
+    // Kyosai (年金共済・共済積立)
+    let kyosaiPensionIncome = 0;
+    let kyosaiSavingIncome = 0;
+    let kyosaiPensionReinvest = 0;
+    let kyosaiSavingReinvest = 0;
+
+    if (age < 60) {
+      // Accumulation phase: grow + monthly contribution
+      kyosaiPensionFund = kyosaiPensionFund * (1 + params.kyosaiPensionReturn) + params.kyosaiPensionMonthly * 12;
+      kyosaiSavingFund  = kyosaiSavingFund  * (1 + params.kyosaiSavingReturn)  + params.kyosaiSavingMonthly  * 12;
+    }
+    if (age === 60) {
+      // Set annual pension payout (if not pre-computed)
+      if (kyosaiPensionAnnual === 0) {
+        kyosaiPensionAnnual = kyosaiPensionFund / 10;
+      }
+      // Saving: lump-sum payout
+      if (kyosaiSavingFund > 0) {
+        kyosaiSavingIncome = kyosaiSavingFund;
+        if (params.reinvestRetirement) {
+          stocks += kyosaiSavingFund;
+          kyosaiSavingReinvest = kyosaiSavingFund;
+        } else {
+          cash += kyosaiSavingFund;
+        }
+        kyosaiSavingFund = 0;
+      }
+    }
+    // Annual pension payout ages 60–69
+    if (age >= 60 && age < 70 && kyosaiPensionAnnual > 0) {
+      kyosaiPensionIncome = kyosaiPensionAnnual;
+      kyosaiPensionFund = Math.max(0, kyosaiPensionFund - kyosaiPensionAnnual);
+      if (params.reinvestRetirement) {
+        stocks += kyosaiPensionIncome;
+        kyosaiPensionReinvest = kyosaiPensionIncome;
+      }
+    }
+
     // Public pension (after 公的年金等控除 & 15% tax on excess)
     let pensionPublic = 0;
     let pensionBenefit = 0;
@@ -219,9 +287,11 @@ export function simulate(params: Params): YearRow[] {
     }
 
     // Non-dividend spendable income
-    const spendableRetirement = params.reinvestRetirement ? 0 : retirementIncome;
-    const spendableIdeco = params.reinvestRetirement ? 0 : iDeCoIncome;
-    const nonDivIncome = spendableRetirement + spendableIdeco + pensionPublic + pensionBenefit;
+    const spendableRetirement    = params.reinvestRetirement ? 0 : retirementIncome;
+    const spendableIdeco         = params.reinvestRetirement ? 0 : iDeCoIncome;
+    const spendableKyosaiSaving  = params.reinvestRetirement ? 0 : kyosaiSavingIncome;
+    const spendableKyosaiPension = params.reinvestRetirement ? 0 : kyosaiPensionIncome;
+    const nonDivIncome = spendableRetirement + spendableIdeco + pensionPublic + pensionBenefit + spendableKyosaiSaving + spendableKyosaiPension;
 
     // Asset draw / reinvest — dividend computed AFTER drawdown on post-drawdown stock balance
     let dividendAfterTax = 0;
@@ -299,7 +369,7 @@ export function simulate(params: Params): YearRow[] {
     const totalAssets =
       Math.max(0, stocks) + gold + Math.max(0, cash);
     const totalIncome =
-      dividendAfterTax + iDeCoIncome + retirementIncome + pensionPublic + pensionBenefit;
+      dividendAfterTax + iDeCoIncome + retirementIncome + pensionPublic + pensionBenefit + kyosaiPensionIncome + kyosaiSavingIncome;
 
     rows.push({
       age,
@@ -327,6 +397,10 @@ export function simulate(params: Params): YearRow[] {
       cashDrawdown,
       stockDrawdown,
       goldDrawdown,
+      kyosaiPensionIncome,
+      kyosaiSavingIncome,
+      kyosaiPensionReinvest,
+      kyosaiSavingReinvest,
     });
   }
 

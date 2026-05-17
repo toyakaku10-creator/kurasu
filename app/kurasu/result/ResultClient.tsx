@@ -172,9 +172,9 @@ function TotalAssetsCell({ r, yoyDiff, isRetired }: { r: YearRow; yoyDiff: numbe
   const [tipPos, setTipPos] = useState({ top: 0, left: 0, above: true });
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  // 退職前: 評価増 + 配当再投資  /  退職後: 評価増 + 収支 + 退職金 + iDeCo
+  // 退職前: 評価増 + 配当再投資  /  退職後: 評価増 + 収支 + 再投資一時金
   const yoy = isRetired
-    ? r.assetAppreciation + r.balance + r.retirementReinvest + r.iDeCoReinvest
+    ? r.assetAppreciation + r.balance + r.retirementReinvest + r.iDeCoReinvest + r.kyosaiSavingReinvest + r.kyosaiPensionReinvest
     : r.assetAppreciation + r.dividendReinvest;
 
   const openTooltip = () => {
@@ -237,6 +237,8 @@ function TotalAssetsCell({ r, yoyDiff, isRetired }: { r: YearRow; yoyDiff: numbe
                   {row('収支', r.balance)}
                   {r.retirementReinvest > 0 && row('退職金再投資', r.retirementReinvest)}
                   {r.iDeCoReinvest > 0 && row('iDeCo再投資', r.iDeCoReinvest)}
+                  {r.kyosaiSavingReinvest > 0 && row('共済積立再投資', r.kyosaiSavingReinvest)}
+                  {r.kyosaiPensionReinvest > 0 && row('年金共済再投資', r.kyosaiPensionReinvest)}
                 </>
               ) : (
                 r.dividendReinvest > 0 && row('配当再投資', r.dividendReinvest)
@@ -424,7 +426,7 @@ export default function ResultClient() {
                   {rows.map((r, i) => {
                     const isStartRow   = i === 0; // previous year-end row (raw input values)
                     const preRetirement = r.age < params.retirementAge;
-                    const pensionIncome = r.pensionPublic + r.pensionBenefit;
+                    const pensionIncome = r.pensionPublic + r.pensionBenefit + r.kyosaiPensionIncome;
                     const yoyDiff = i > 0 ? r.totalAssets - rows[i - 1].totalAssets : null;
                     const act = actuals[String(r.year)];
                     const hasActual = !!act;
@@ -457,7 +459,13 @@ export default function ResultClient() {
                         {/* 2. 齢 */}
                         <td className="py-1 text-right font-normal tabular-nums"
                           style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}` }}>
-                          {r.age}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+                            <span>{r.age}</span>
+                            {r.retirementIncome > 0 && <span style={{ fontSize: '0.45rem', background: GOLD, color: '#fff', borderRadius: 2, padding: '0 3px', lineHeight: '1.4', whiteSpace: 'nowrap' }}>退職金</span>}
+                            {r.iDeCoIncome > 0 && <span style={{ fontSize: '0.45rem', background: NAVY, color: '#fff', borderRadius: 2, padding: '0 3px', lineHeight: '1.4', whiteSpace: 'nowrap' }}>iDeCo</span>}
+                            {r.kyosaiSavingIncome > 0 && <span style={{ fontSize: '0.45rem', background: '#2563eb', color: '#fff', borderRadius: 2, padding: '0 3px', lineHeight: '1.4', whiteSpace: 'nowrap' }}>共済積立</span>}
+                            {r.kyosaiPensionIncome > 0 && <span style={{ fontSize: '0.45rem', background: '#0d9488', color: '#fff', borderRadius: 2, padding: '0 3px', lineHeight: '1.4', whiteSpace: 'nowrap' }}>年金共済</span>}
+                          </div>
                         </td>
                         {/* 3. 総資産 */}
                         <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px' }}

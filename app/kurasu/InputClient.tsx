@@ -297,6 +297,31 @@ export default function InputClient() {
               onChange={(v) => set('iDeCoYearsOfMembership', v)} min={1} max={40} step={1} display={yr} />
           </Sec>
 
+          <Sec title="共済" icon={<Coins size={15} />} defaultOpen={false}>
+            <Full>
+              <div className="text-xs font-semibold pb-1" style={{ color: NAVY }}>年金共済（60歳から10年均等受取）</div>
+              <div className="flex flex-col gap-6">
+                <Slider label="現在の残高" value={params.kyosaiPensionAmount}
+                  onChange={(v) => set('kyosaiPensionAmount', v)} min={0} max={10_000_000} step={100_000} display={yen} />
+                <Slider label="月額積立額" value={params.kyosaiPensionMonthly}
+                  onChange={(v) => set('kyosaiPensionMonthly', v)} min={0} max={100_000} step={5_000} display={yenM} />
+                <Slider label="利回り" value={params.kyosaiPensionReturn}
+                  onChange={(v) => set('kyosaiPensionReturn', v)} min={0} max={0.10} step={0.001} display={pct} />
+              </div>
+            </Full>
+            <Full>
+              <div className="text-xs font-semibold pb-1 pt-2" style={{ color: NAVY }}>共済積立（60歳一括受取）</div>
+              <div className="flex flex-col gap-6">
+                <Slider label="現在の残高" value={params.kyosaiSavingAmount}
+                  onChange={(v) => set('kyosaiSavingAmount', v)} min={0} max={10_000_000} step={100_000} display={yen} />
+                <Slider label="月額積立額" value={params.kyosaiSavingMonthly}
+                  onChange={(v) => set('kyosaiSavingMonthly', v)} min={0} max={100_000} step={5_000} display={yenM} />
+                <Slider label="利回り" value={params.kyosaiSavingReturn}
+                  onChange={(v) => set('kyosaiSavingReturn', v)} min={0} max={0.10} step={0.001} display={pct} />
+              </div>
+            </Full>
+          </Sec>
+
           <Sec title="退職" icon={<LogOut size={15} />}>
             {params.currentAge >= 60 ? (
               <div className="flex flex-col gap-2">
