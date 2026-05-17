@@ -257,7 +257,10 @@ export function simulate(params: Params): YearRow[] {
         stocks += balance;
         surplusReinvest = balance;
       } else {
-        let deficit = -balance;
+        // Draw = deficit + appreciation so that totalAssets always decreases by |balance|.
+        // Without this, gold/stock price gains can outpace the deficit and make
+        // totalAssets increase even when income < expenses.
+        let deficit = -balance + Math.max(0, assetAppreciation);
         // 1) Draw from cash first
         if (cash >= deficit) {
           cash -= deficit;
