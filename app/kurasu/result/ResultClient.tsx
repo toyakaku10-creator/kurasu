@@ -390,10 +390,10 @@ export default function ResultClient() {
                 <span className="font-normal text-xs ml-1" style={{ color: SUB }}>（万円・12月31日時点・行をタップして実績を入力）</span>
               </h2>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4, fontSize: '0.6rem', color: SUB }}>
-                <span><Banknote size={9} color={GOLD} style={{ display: 'inline', verticalAlign: 'middle' }} /> 退職金</span>
-                <span><PiggyBank size={9} color={GOLD} style={{ display: 'inline', verticalAlign: 'middle' }} /> iDeCo</span>
-                <span><Wallet size={9} color={GOLD} style={{ display: 'inline', verticalAlign: 'middle' }} /> 共済積立</span>
-                <span><CalendarClock size={9} color={GOLD} style={{ display: 'inline', verticalAlign: 'middle' }} /> 年金共済</span>
+                <span><Banknote      size={9} color={GOLD}      style={{ display: 'inline', verticalAlign: 'middle' }} /> 退職金</span>
+                <span><PiggyBank     size={9} color="#60a5fa"  style={{ display: 'inline', verticalAlign: 'middle' }} /> iDeCo</span>
+                <span><Wallet        size={9} color="#34d399"  style={{ display: 'inline', verticalAlign: 'middle' }} /> 共済積立</span>
+                <span><CalendarClock size={9} color="#fb923c"  style={{ display: 'inline', verticalAlign: 'middle' }} /> 年金共済</span>
               </div>
             </div>
             <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: '520px', WebkitOverflowScrolling: 'touch', scrollbarGutter: 'stable' }}>
@@ -403,9 +403,9 @@ export default function ResultClient() {
                   <col style={{ width: '14%' }} />  {/* 齢     */}
                   <col style={{ width: '16%' }} />  {/* 総資産 */}
                   <col style={{ width: '11%' }} />  {/* 配当   */}
-                  <col style={{ width: '10%' }} />  {/* 年金   */}
-                  <col style={{ width: '13%' }} />  {/* 支出   */}
-                  <col style={{ width: '11%' }} />  {/* 収支   */}
+                  <col style={{ width: '8%'  }} />  {/* 年金   */}
+                  <col style={{ width: '8%'  }} />  {/* 支出   */}
+                  <col style={{ width: '14%' }} />  {/* 収支   */}
                 </colgroup>
                 <thead>
                   <tr style={{ position: 'sticky', top: 0, zIndex: 1, background: CARD, boxShadow: `0 1px 0 ${BORDER}` }}>
@@ -414,8 +414,8 @@ export default function ResultClient() {
                       { label: '齢',      align: 'right', pl: '2px',  pr: '4px',  bold: false, divider: true  },
                       { label: '総資産',  align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
                       { label: '配当',    align: 'right', pl: '2px',  pr: '2px',  bold: true,  divider: false },
-                      { label: '年金',    align: 'right', pl: '2px',  pr: '2px',  bold: true,  divider: false },
-                      { label: '支出',    align: 'right', pl: '4px',  pr: '4px',  bold: true,  divider: false },
+                      { label: '年金',    align: 'right', pl: '1px',  pr: '1px',  bold: true,  divider: false },
+                      { label: '支出',    align: 'right', pl: '1px',  pr: '1px',  bold: true,  divider: false },
                       { label: '収支',    align: 'right', pl: '4px',  pr: '14px', bold: true,  divider: false },
                     ] as const).map(({ label, align, pl, pr, bold, divider }) => (
                       <th key={label}
@@ -465,10 +465,10 @@ export default function ResultClient() {
                         <td className="py-1 font-normal tabular-nums"
                           style={{ color: NAVY, paddingLeft: '2px', paddingRight: '4px', borderRight: `1px solid ${BORDER}`, verticalAlign: 'middle' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2, overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                            {r.retirementIncome > 0   && <Banknote     size={9} color={GOLD} style={{ flexShrink: 0 }} />}
-                            {r.iDeCoIncome > 0        && <PiggyBank    size={9} color={GOLD} style={{ flexShrink: 0 }} />}
-                            {r.kyosaiSavingIncome > 0  && <Wallet       size={9} color={GOLD} style={{ flexShrink: 0 }} />}
-                            {r.kyosaiPensionIncome > 0 && <CalendarClock size={9} color={GOLD} style={{ flexShrink: 0 }} />}
+                            {r.retirementIncome > 0    && <Banknote      size={9} color={GOLD}      style={{ flexShrink: 0 }} />}
+                            {r.iDeCoIncome > 0         && <PiggyBank     size={9} color="#60a5fa"  style={{ flexShrink: 0 }} />}
+                            {r.kyosaiSavingIncome > 0  && <Wallet        size={9} color="#34d399"  style={{ flexShrink: 0 }} />}
+                            {r.kyosaiPensionIncome > 0 && <CalendarClock size={9} color="#fb923c"  style={{ flexShrink: 0 }} />}
                             <span style={{ flexShrink: 0 }}>{r.age}</span>
                           </div>
                         </td>
@@ -488,11 +488,11 @@ export default function ResultClient() {
                           {showPre ? '—' : dispDivM === 0 ? '—' : dispDivM.toLocaleString()}
                         </td>
                         {/* 5. 年金 */}
-                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '2px', paddingRight: '2px' }}>
+                        <td className="py-1 text-right tabular-nums" style={{ color: SUB, paddingLeft: '1px', paddingRight: '1px' }}>
                           {dispPenM === 0 ? '—' : dispPenM.toLocaleString()}
                         </td>
                         {/* 6. 支出 */}
-                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '4px', paddingRight: '4px',
+                        <td className="py-1 text-right tabular-nums" style={{ paddingLeft: '1px', paddingRight: '1px',
                           color: hasActual && act?.expense != null ? GOLD : SUB,
                           fontWeight: hasActual && act?.expense != null ? 600 : undefined }}>
                           {dispExpM === 0 ? '—' : dispExpM.toLocaleString()}
